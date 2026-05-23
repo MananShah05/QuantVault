@@ -55,11 +55,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS configuration - supports port 3000 and 3001
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://quant-vault-1.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
