@@ -5,3 +5,5 @@
 download_stitch.py
 stitch_downloads/
 
+# Python
+__pycache__/
