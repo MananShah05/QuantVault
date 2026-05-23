@@ -5,7 +5,7 @@ Asset search endpoint — validates tickers via yfinance.
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from schemas import AssetSearchResult
-from services.market_data import validate_ticker
+from services.market_data import search_tickers
 from services.auth import get_current_user
 
 router = APIRouter(tags=["assets"])
@@ -17,13 +17,13 @@ async def search_assets(
     user_id: str = Depends(get_current_user),
 ):
     """
-    Search for a valid ticker symbol.
-    Uses yfinance to validate and return metadata.
+    Search for ticker symbols.
+    Uses Finnhub to return matching metadata.
     Requires authentication.
     """
     try:
-        result = validate_ticker(q.strip())
-        return [AssetSearchResult(**result)]
+        results = search_tickers(q.strip())
+        return [AssetSearchResult(**res) for res in results]
     except ValueError as e:
         raise HTTPException(
             status_code=422,

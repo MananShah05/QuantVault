@@ -5,6 +5,8 @@ Market data service — fetches price data and validates tickers via yfinance.
 import yfinance as yf
 import pandas as pd
 import logging
+import os
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -69,40 +71,44 @@ def fetch_prices(tickers: list[str], period: str = "2y") -> pd.DataFrame:
     return prices
 
 
-def validate_ticker(ticker: str) -> dict:
+def search_tickers(query: str) -> list[dict]:
     """
-    Validate a ticker symbol using yfinance and return metadata.
-
-    Args:
-        ticker: Ticker symbol to validate (e.g. "AAPL", "GLD", "USDINR=X")
-
-    Returns:
-        Dict with keys: ticker, name, exchange, asset_class
-
-    Raises:
-        ValueError: If ticker is invalid or not found
+    Search for ticker symbols using Finnhub.
     """
+    api_key = os.getenv("FINNHUB_API_KEY", "d8908npr01qs9ff6fn0gd8908npr01qs9ff6fn10")
     try:
-        t = yf.Ticker(ticker)
-        info = t.info
-
-        if not info or info.get("regularMarketPrice") is None:
-            # Try a quick history fetch as a fallback validation
-            hist = t.history(period="5d")
-            if hist.empty:
-                raise ValueError(f"Ticker '{ticker}' not found on yfinance")
-
-        quote_type = info.get("quoteType", "EQUITY")
-        asset_class = QUOTE_TYPE_MAP.get(quote_type, "equity")
-
-        return {
-            "ticker": ticker.upper(),
-            "name": info.get("shortName") or info.get("longName") or ticker,
-            "exchange": info.get("exchange", "Unknown"),
-            "asset_class": asset_class,
-        }
-
+        response = httpx.get(
+            "https://finnhub.io/api/v1/search",
+            params={"q": query, "token": api_key},
+            timeout=5.0
+        )
+        response.raise_for_status()
+        data = response.json()
+        
+        results = []
+        for item in data.get("result", [])[:10]:
+            item_type = item.get("type", "").lower()
+            if "crypto" in item_type:
+                asset_class = "crypto"
+            elif "etf" in item_type or "fund" in item_type:
+                asset_class = "equity"
+            elif "currency" in item_type or "fx" in item_type:
+                asset_class = "fx"
+            else:
+                asset_class = "equity"
+                
+            results.append({
+                "ticker": item.get("symbol"),
+                "name": item.get("description"),
+                "exchange": "US",
+                "asset_class": asset_class,
+            })
+            
+        if not results:
+            raise ValueError(f"No results found for '{query}'")
+            
+        return results
+        
     except Exception as e:
-        if "not found" in str(e).lower() or "no data" in str(e).lower():
-            raise ValueError(f"Ticker '{ticker}' not found on yfinance")
-        raise ValueError(f"Failed to validate ticker '{ticker}': {str(e)}")
+        logger.error(f"Finnhub search failed: {str(e)}")
+        raise ValueError(f"Failed to search for '{query}'")
