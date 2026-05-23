@@ -54,8 +54,9 @@ export default function LandingPage() {
           startHandshake();
         }
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || "An authentication error occurred.");
+        } catch (err) {
+      const message = err instanceof Error ? err.message : "An authentication error occurred.";
+      setErrorMessage(message);
       setIsLoading(false);
     }
   };
