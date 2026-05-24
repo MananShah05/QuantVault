@@ -1,28 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCreatePortfolio } from "@/hooks/usePortfolio";
 import { AssetSearch } from "./AssetSearch";
-import { Loader2 } from "lucide-react";
+import { Loader2, Zap, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MOTION } from "@/lib/motion";
+
+interface AssetInput {
+  ticker: string;
+  name?: string;
+  asset_class?: string;
+  weight: number;
+}
 
 export function PortfolioBuilder() {
   const router = useRouter();
   const [name, setName] = useState("Global Alpha Aggregator");
-  const [assets, setAssets] = useState<Array<{ticker: string, name?: string, asset_class?: string, weight: number}>>([]);
-  
+  const [assets, setAssets] = useState<AssetInput[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [logs, setLogs] = useState<Array<{ time: string; msg: string }>>([]);
+  const logsEndRef = useRef<HTMLDivElement>(null);
+
   const { mutateAsync: createPortfolio } = useCreatePortfolio();
+
+  // Initialize logs
+  useEffect(() => {
+    setLogs([
+      { time: new Date().toLocaleTimeString(), msg: "Terminal session secure. Risk Engine initialized." }
+    ]);
+  }, []);
+
+  const addLog = (msg: string) => {
+    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg }]);
+  };
+
+  // Scroll logs to bottom
+  useEffect(() => {
+    logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [logs]);
 
   const totalWeight = assets.reduce((sum, a) => sum + a.weight, 0);
   const isWeightValid = totalWeight === 100;
   const isNameValid = name.length >= 3;
   const isValid = isWeightValid && isNameValid && assets.length >= 2 && assets.length <= 10;
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const assetClassWeights = assets.reduce<Record<string, number>>((acc, asset) => {
-    const key = (asset.asset_class || "equity").toUpperCase();
-    acc[key] = (acc[key] || 0) + asset.weight;
-    return acc;
-  }, {});
+
+  // HHI Concentration calculation
+  const hhi = assets.reduce((sum, a) => sum + (a.weight) ** 2, 0);
+  const concentration = 
+    assets.length === 0 
+      ? "PENDING ASSETS" 
+      : hhi < 2500 
+        ? "DIVERSIFIED" 
+        : hhi < 5000 
+          ? "BALANCED" 
+          : "CONCENTRATED";
+
+  const concentrationColor = 
+    concentration === "DIVERSIFIED" 
+      ? "text-positive" 
+      : concentration === "BALANCED" 
+        ? "text-warning" 
+        : "text-negative";
+
+  const assetColors = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)", "var(--series-5)"];
 
   const handleAddAsset = (asset: { ticker: string; name: string; asset_class: string }) => {
     if (assets.find(a => a.ticker === asset.ticker)) return;
@@ -30,19 +72,23 @@ export function PortfolioBuilder() {
     
     const remaining = Math.max(0, 100 - totalWeight);
     setAssets([...assets, { ...asset, weight: remaining }]);
+    addLog(`Added instrument ${asset.ticker} with target weight ${remaining}%`);
   };
 
   const handleUpdateWeight = (ticker: string, weight: number) => {
-    setAssets(assets.map(a => a.ticker === ticker ? { ...a, weight } : a));
+    const cleanedVal = Math.min(100, Math.max(0, weight));
+    setAssets(assets.map(a => a.ticker === ticker ? { ...a, weight: cleanedVal } : a));
   };
 
   const handleRemoveAsset = (ticker: string) => {
     setAssets(assets.filter(a => a.ticker !== ticker));
+    addLog(`Removed instrument ${ticker}`);
   };
 
   const handleSubmit = async () => {
     if (!isValid) return;
     setIsSubmitting(true);
+    addLog("Executing trades. Storing portfolio structure in Supabase...");
     try {
       const payload = {
         name,
@@ -52,215 +98,306 @@ export function PortfolioBuilder() {
           asset_class: a.asset_class || "equity"
         }))
       };
+      
       const res = await createPortfolio(payload);
+      addLog("Portfolio registered successfully. Initializing FastAPI quantitative metrics engine...");
       
       const { api } = await import("@/lib/api");
       await api.post(`/api/portfolios/${res.id}/compute`);
+      addLog("Calculations finalized. Redirecting to Analytics Workspace.");
       
       router.push(`/portfolio/${res.id}`);
     } catch (err) {
       console.error(err);
+      addLog(`Execution error: ${err instanceof Error ? err.message : "Computation failed"}`);
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="max-w-container-max mx-auto px-margin-desktop py-12 -mt-10">
-      <header className="mb-12">
-        <div className="flex items-end justify-between border-b border-border pb-6">
-          <div>
-            <span className="font-label-caps text-label-caps text-primary mb-2 block uppercase tracking-[0.25em]">Portfolio Creation</span>
-            <input 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="bg-transparent border-b border-transparent focus:border-primary focus:ring-0 font-headline-lg text-headline-lg outline-none w-full"
-              placeholder="Portfolio Name"
-            />
-          </div>
-          <div className="flex gap-4">
-            <button className="border border-outline px-6 py-2 font-label-caps text-label-caps text-on-surface hover:bg-accent transition-all">SAVE DRAFT</button>
-            <button 
-              onClick={handleSubmit}
-              disabled={!isValid || isSubmitting}
-              className={`px-8 py-2 font-label-caps text-label-caps transition-all ${isValid && !isSubmitting ? 'bg-primary text-on-primary hover:bg-primary-container' : 'bg-surface-container-highest text-on-surface-variant cursor-not-allowed'}`}
-            >
-              {isSubmitting ? <Loader2 className="animate-spin inline-block mr-2 w-4 h-4" /> : null}
-              EXECUTE TRADE
-            </button>
-          </div>
-        </div>
-      </header>
+  // Pure SVG donut configuration
+  const radius = 50;
+  const circ = 2 * Math.PI * radius; // ~314.16
+  let accumulatedWeight = 0;
+  const segments = assets.map((asset, i) => {
+    const segmentLength = (asset.weight / 100) * circ;
+    const strokeOffset = circ - (accumulatedWeight / 100) * circ;
+    accumulatedWeight += asset.weight;
+    return {
+      ticker: asset.ticker,
+      weight: asset.weight,
+      color: assetColors[i % assetColors.length],
+      segmentLength,
+      strokeOffset
+    };
+  });
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
-        <section className="lg:col-span-7 space-y-8">
-          <div className="glass-panel p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="font-label-caps text-label-caps text-secondary tracking-widest">ASSET SEARCH & SELECTION</h3>
-              <span className="text-xs font-data-mono text-primary px-2 py-1 bg-primary/10 border border-primary/20">LIVE DATA CONNECTED</span>
+  return (
+    <div className="w-full select-none font-sans text-[var(--text-secondary)]">
+      <motion.div 
+        variants={MOTION.pageContainer}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-subtle pb-6 gap-4"
+      >
+        <motion.div variants={MOTION.itemUp}>
+          <h1 className="font-serif italic text-[32px] text-[var(--text-primary)]">New Portfolio</h1>
+          <p className="text-xs mt-1 text-[var(--text-secondary)]">Configure asset parameters and target allocations.</p>
+        </motion.div>
+        
+        <motion.div variants={MOTION.itemUp} className="flex gap-2">
+          <button 
+            onClick={handleSubmit}
+            disabled={!isValid || isSubmitting}
+            className={`h-10 px-6 rounded-[6px] font-sans text-[13px] font-medium flex items-center gap-2 transition-all ${
+              isValid && !isSubmitting 
+                ? "bg-accent hover:bg-[#3b7de8] text-white" 
+                : "bg-surface border border-subtle text-[var(--text-muted)] cursor-not-allowed opacity-40"
+            }`}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin w-4 h-4 text-accent" />
+                <span className="font-mono text-xs text-accent">COMPUTING METRICS...</span>
+              </>
+            ) : (
+              <>
+                <Zap size={14} className="fill-current" />
+                <span>Execute Trade</span>
+              </>
+            )}
+          </button>
+        </motion.div>
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+        {/* Left Column: Configuration & Search */}
+        <motion.div variants={MOTION.itemUp} className="space-y-6">
+          <div className="bg-surface border border-subtle rounded-lg p-6 space-y-6">
+            {/* Portfolio Name Input */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-sans font-medium tracking-[0.15em] text-[var(--text-muted)] uppercase">
+                PORTFOLIO NAME
+              </label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3 py-2 bg-base border border-default rounded-[6px] text-sm text-[var(--text-primary)] focus:border-accent/40 focus:ring-2 focus:ring-accent-dim outline-none transition-all"
+                placeholder="Portfolio Title"
+              />
             </div>
-            
-            <div className="space-y-6">
-              {/* Uses the existing AssetSearch component but styles should cascade if possible, or we wrap it */}
-              <div className="relative group w-full">
-                 <AssetSearch onAdd={handleAddAsset} />
+
+            {/* Asset Search */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-sans font-medium tracking-[0.15em] text-[var(--text-muted)] uppercase">
+                ASSET SEARCH
+              </label>
+              <AssetSearch onAdd={handleAddAsset} />
+            </div>
+
+            {/* Selected Assets Rows */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-1 border-b border-subtle">
+                <span className="text-[10px] font-sans font-medium tracking-[0.15em] text-[var(--text-muted)] uppercase">
+                  SELECTED ASSETS ({assets.length} / 10)
+                </span>
               </div>
- 
-              <div className="space-y-4 pt-6 max-h-[500px] overflow-y-auto custom-scrollbar">
-                {assets.map(asset => (
-                  <div key={asset.ticker} className="flex items-center justify-between p-4 bg-muted/40 border border-border hover:border-border/80 transition-all rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-surface-container-highest flex items-center justify-center font-bold text-primary border border-primary/20">
-                        {asset.ticker.substring(0, 2).toUpperCase()}
+              
+              <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1 custom-scrollbar">
+                {assets.map((asset, i) => {
+                  const color = assetColors[i % assetColors.length];
+                  return (
+                    <div 
+                      key={asset.ticker} 
+                      className="flex items-center justify-between p-3 bg-base border border-subtle rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-1.5 h-6 rounded-none shrink-0" 
+                          style={{ backgroundColor: color }}
+                        />
+                        <div>
+                          <p className="font-mono text-[13px] font-semibold text-accent">{asset.ticker}</p>
+                          <p className="text-[11px] text-[var(--text-muted)] truncate max-w-[180px] md:max-w-none">
+                            {asset.name || asset.ticker}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-body-md font-semibold">{asset.name || asset.ticker}</p>
-                        <p className="text-xs font-data-mono text-on-surface-variant uppercase">{asset.asset_class || 'EQUITY'} | MARKET</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-8">
-                      <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-label-caps text-on-surface-variant mb-1">ALLOCATION %</span>
-                        <div className="flex items-center gap-2">
-                          <button 
-                            onClick={() => handleUpdateWeight(asset.ticker, Math.max(0, asset.weight - 1))}
-                            className="w-6 h-6 border border-border flex items-center justify-center hover:bg-primary hover:text-black transition-colors rounded"
+                      
+                      <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateWeight(asset.ticker, asset.weight - 1)}
+                            className="w-7 h-7 bg-elevated border border-default rounded flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                           >
-                            -
+                            −
                           </button>
-                          <input 
-                            className="w-16 bg-transparent border-none text-right font-data-mono text-primary p-0 focus:ring-0 outline-none font-bold" 
-                            type="number" 
+                          
+                          <input
+                            type="number"
                             value={asset.weight}
                             onChange={(e) => handleUpdateWeight(asset.ticker, parseFloat(e.target.value) || 0)}
+                            className="w-12 h-7 bg-base text-center font-mono text-[13px] text-[var(--text-primary)] focus:border-accent/40 focus:ring-0 outline-none border border-default rounded"
                           />
-                          <button 
+                          
+                          <button
+                            type="button"
                             onClick={() => handleUpdateWeight(asset.ticker, asset.weight + 1)}
-                            className="w-6 h-6 border border-border flex items-center justify-center hover:bg-primary hover:text-black transition-colors rounded"
+                            className="w-7 h-7 bg-elevated border border-default rounded flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                           >
                             +
                           </button>
                         </div>
+
+                        <button 
+                          onClick={() => handleRemoveAsset(asset.ticker)}
+                          className="text-[var(--text-muted)] hover:text-[#f87171] transition-colors p-1"
+                          title="Remove asset"
+                        >
+                          <X size={12} />
+                        </button>
                       </div>
-                      <button onClick={() => handleRemoveAsset(asset.ticker)} className="text-on-surface-variant/40 hover:text-error transition-colors">
-                        <span className="material-symbols-outlined text-xl">close</span>
-                      </button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {assets.length === 0 && (
-                  <div className="p-8 text-center text-on-surface-variant border border-dashed border-border rounded-lg">
-                    Search and select an asset to begin allocation.
+                  <div className="py-8 text-center text-xs text-[var(--text-muted)] border border-dashed border-default rounded-lg">
+                    Search and select assets above to configure allocation.
                   </div>
                 )}
               </div>
             </div>
-          </div>
-          
-          <div className="glass-panel p-8">
-            <h3 className="font-label-caps text-label-caps text-secondary tracking-widest mb-6">INTRA-PORTFOLIO CORRELATION</h3>
-            <div className="rounded-lg border border-dashed border-border p-8 text-center text-on-surface-variant">
-              Correlation matrix is generated from live market history after execution.
-            </div>
-          </div>
-        </section>
 
-        <section className="lg:col-span-5 space-y-8 lg:sticky lg:top-32">
-          <div className="glass-panel overflow-hidden">
-            <div className="bg-primary/5 p-8 border-b border-border">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h3 className="font-label-caps text-label-caps text-primary tracking-widest mb-1">TOTAL EXPOSURE</h3>
-                  <p className="font-display-lg text-display-lg">{totalWeight}%</p>
-                </div>
-                <span className="material-symbols-outlined text-primary text-4xl" data-weight="fill">account_balance_wallet</span>
+            {/* Weight Total Progress Bar */}
+            <div className="space-y-2 pt-2 border-t border-subtle">
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span>TOTAL WEIGHT</span>
+                <span className={totalWeight > 100 ? "text-negative" : "text-positive"}>
+                  {totalWeight}%
+                </span>
               </div>
-              <div className="w-full bg-muted h-1.5 relative rounded-full overflow-hidden">
-                <div className={`absolute left-0 top-0 h-full ${totalWeight === 100 ? 'bg-primary' : totalWeight > 100 ? 'bg-error' : 'bg-primary/50'}`} style={{ width: `${Math.min(totalWeight, 100)}%` }}></div>
+              <div className="h-1 bg-elevated rounded-none overflow-hidden w-full">
+                <div
+                  className={`h-full transition-all duration-200 ${totalWeight > 100 ? "bg-negative" : "bg-positive"}`}
+                  style={{ width: `${Math.min(totalWeight, 100)}%` }}
+                />
               </div>
-              <div className="flex justify-between mt-3">
-                <span className="text-xs font-data-mono text-on-surface-variant">Allocated: {totalWeight}%</span>
-                <span className="text-xs font-data-mono text-on-surface-variant">Remaining: {Math.max(0, 100 - totalWeight)}%</span>
+              <div className="flex justify-between text-[11px] text-[var(--text-muted)]">
+                <span>Allocated: {totalWeight}%</span>
+                <span>Remaining: {Math.max(0, 100 - totalWeight)}%</span>
               </div>
             </div>
+          </div>
+
+          {/* Emulated Quantitative Log Terminal */}
+          <div className="bg-base border border-subtle rounded-lg p-4 space-y-2 font-mono text-[11px]">
+            <p className="text-[10px] font-sans font-semibold text-[var(--text-muted)] tracking-widest uppercase">
+              SYSTEM LOG & VERIFICATION
+            </p>
+            <div className="h-[100px] overflow-y-auto pr-1 custom-scrollbar space-y-1.5 pt-2 border-t border-subtle/50">
+              <AnimatePresence initial={false}>
+                {logs.map((log, i) => (
+                  <motion.p
+                    key={i}
+                    initial={{ y: 8, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                    className="leading-relaxed"
+                  >
+                    <span className="text-accent">[{log.time}]</span>{" "}
+                    <span className="text-[var(--text-secondary)]">{log.msg}</span>
+                  </motion.p>
+                ))}
+              </AnimatePresence>
+              <div ref={logsEndRef} />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Right Column: Live Donut Preview & Concentration */}
+        <motion.div variants={MOTION.itemUp} className="space-y-6">
+          <div className="bg-surface border border-subtle rounded-lg p-6 space-y-6 text-center">
+            <h3 className="text-[10px] font-sans font-medium tracking-[0.15em] text-[var(--text-muted)] uppercase text-left">
+              ALLOCATION PREVIEW
+            </h3>
             
-            <div className="p-8 space-y-6">
-              <div className="flex justify-between items-center pb-4 border-b border-border">
-                <span className="font-label-caps text-label-caps text-on-surface-variant">VALIDATION STATUS</span>
-                <div className={`flex items-center gap-2 ${isWeightValid ? 'text-primary' : 'text-error'}`}>
-                  <span className="material-symbols-outlined text-sm">{isWeightValid ? 'check_circle' : 'error'}</span>
-                  <span className="font-data-mono text-xs">{isWeightValid ? 'FULLY COMPLIANT' : 'INVALID WEIGHTS'}</span>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-8">
-                <div>
-                  <span className="font-label-caps text-[10px] text-on-surface-variant block mb-1">ASSET COUNT</span>
-                  <span className="font-data-mono text-lg text-on-surface font-semibold">{assets.length}</span>
-                </div>
-                <div>
-                  <span className="font-label-caps text-[10px] text-on-surface-variant block mb-1">WEIGHT STATUS</span>
-                  <span className="font-data-mono text-lg text-on-surface font-semibold">{isWeightValid ? "Ready" : "Pending"}</span>
-                </div>
-                <div>
-                  <span className="font-label-caps text-[10px] text-on-surface-variant block mb-1">RISK METRICS</span>
-                  <span className="font-data-mono text-lg text-on-surface font-semibold">Post-compute</span>
-                </div>
-                <div>
-                  <span className="font-label-caps text-[10px] text-on-surface-variant block mb-1">SNAPSHOT</span>
-                  <span className="font-data-mono text-lg text-primary font-bold">Live API</span>
+            {/* Pure SVG Donut Chart */}
+            <div className="flex items-center justify-center py-4">
+              <div className="relative w-[160px] h-[160px] flex items-center justify-center">
+                <svg width="160" height="160" viewBox="0 0 120 120" className="-rotate-90">
+                  {/* Background Circle */}
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="var(--bg-elevated)" strokeWidth="10" />
+                  {/* Segments */}
+                  {segments.map((seg) => (
+                    <circle
+                      key={seg.ticker}
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      fill="none"
+                      stroke={seg.color}
+                      strokeWidth="10"
+                      strokeDasharray={`${seg.segmentLength} ${circ - seg.segmentLength}`}
+                      strokeDashoffset={seg.strokeOffset}
+                      strokeLinecap="butt"
+                      style={{ transition: "stroke-dasharray 300ms ease, stroke-dashoffset 300ms ease" }}
+                    />
+                  ))}
+                </svg>
+                {/* Center text overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="font-mono text-2xl font-bold text-[var(--text-primary)]">{totalWeight}%</span>
+                  <span className="font-sans text-[9px] font-medium tracking-widest text-[var(--text-muted)] uppercase">
+                    ALLOCATED
+                  </span>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="glass-panel p-8 relative min-h-[300px] flex flex-col justify-between">
-            <h3 className="font-label-caps text-label-caps text-secondary tracking-widest mb-4">ASSET CLASS CONCENTRATION</h3>
-            <div className="flex-1 flex items-center justify-center py-6">
-              <div className="relative w-48 h-48 border-[12px] border-muted rounded-full flex items-center justify-center">
-                <div className="text-center">
-                  <p className="font-data-mono text-2xl font-bold">{totalWeight}%</p>
-                  <p className="font-label-caps text-[10px] text-on-surface-variant">ALLOCATED</p>
-                </div>
+            {/* Asset Breakdown list */}
+            <div className="space-y-3.5 text-left pt-2 border-t border-subtle">
+              <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase block mb-1">
+                ASSET BREAKDOWN
+              </span>
+              
+              <div className="space-y-2.5 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
+                {assets.map((asset, i) => {
+                  const color = assetColors[i % assetColors.length];
+                  return (
+                    <div key={asset.ticker} className="flex items-center justify-between text-xs">
+                      <span className="font-mono font-medium text-[var(--text-primary)] w-12 shrink-0">{asset.ticker}</span>
+                      <div className="flex-1 mx-3 h-1 bg-elevated rounded-none overflow-hidden relative">
+                        <div
+                          className="h-full rounded-none"
+                          style={{ width: `${asset.weight}%`, backgroundColor: color }}
+                        />
+                      </div>
+                      <span className="font-mono text-[var(--text-secondary)] w-8 text-right shrink-0">{asset.weight}%</span>
+                    </div>
+                  );
+                })}
+                {assets.length === 0 && (
+                  <p className="text-xs text-[var(--text-muted)] text-center py-2">Add assets to view segments.</p>
+                )}
               </div>
             </div>
-            <div className="space-y-3">
-              {Object.entries(assetClassWeights).map(([assetClass, weight], i) => (
-                <div key={assetClass} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 ${i % 2 === 0 ? 'bg-primary' : 'bg-secondary'}`}></div>
-                    <span className="text-xs font-body-md text-on-surface-variant">{assetClass}</span>
-                  </div>
-                  <span className="font-data-mono text-xs font-semibold">{weight}%</span>
-                </div>
-              ))}
-              {assets.length === 0 && (
-                <p className="text-xs text-on-surface-variant text-center">Add assets to see concentration.</p>
-              )}
+
+            {/* Concentration Score */}
+            <div className="pt-4 border-t border-subtle text-left space-y-1">
+              <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase block">
+                CONCENTRATION INDEX
+              </span>
+              <p className={`font-mono text-lg font-bold ${concentrationColor}`}>
+                {concentration}
+              </p>
+              <p className="text-[10px] text-[var(--text-muted)] leading-normal font-sans pt-1">
+                Calculated dynamically using the Herfindahl-Hirschman index of weight distributions.
+              </p>
             </div>
           </div>
-        </section>
+        </motion.div>
       </div>
-      
-      <footer className="mt-12 glass-panel p-6">
-        <div className="flex items-center gap-4 mb-4 border-b border-border pb-4">
-          <span className="material-symbols-outlined text-primary text-sm">terminal</span>
-          <span className="font-label-caps text-label-caps tracking-widest text-secondary">SYSTEM LOG & VALIDATION</span>
-        </div>
-        <div className="font-data-mono text-xs space-y-2 opacity-60">
-          <p><span className="text-primary">[14:22:01]</span> System initialized and ready for inputs.</p>
-          {assets.map(a => (
-            <p key={a.ticker}><span className="text-primary">[{new Date().toLocaleTimeString()}]</span> Added {a.ticker} at {a.weight}% allocation.</p>
-          ))}
-          {!isWeightValid && assets.length > 0 && (
-            <div className="flex items-center gap-2 animate-pulse">
-              <span className="w-1.5 h-3 bg-error"></span>
-              <span className="text-error">Weights sum to {totalWeight}%. Must equal 100%.</span>
-            </div>
-          )}
-        </div>
-      </footer>
     </div>
   );
 }

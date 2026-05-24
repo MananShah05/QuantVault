@@ -110,3 +110,6 @@ export interface AllocationSummaryResponse {
   diversification_score: number;
   as_of_date: string;
 }
+
+export type PortfolioSnapshot = SnapshotResponse;
+

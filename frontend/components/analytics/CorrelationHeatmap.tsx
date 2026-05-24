@@ -1,6 +1,3 @@
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Asset } from "@/types";
 
 interface Props {
@@ -9,85 +6,89 @@ interface Props {
 }
 
 export function CorrelationHeatmap({ matrix, assets }: Props) {
-  const { theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const isDark = !mounted || theme === "dark";
 
   if (!matrix) {
     return (
-      <Card className="bg-card border-border shadow-xl h-full flex flex-col">
-        <CardHeader><CardTitle className="text-lg">Correlation Matrix</CardTitle></CardHeader>
-        <CardContent className="flex-1 flex items-center justify-center">
-          <p className="text-muted-foreground">Not available</p>
-        </CardContent>
-      </Card>
+      <div className="bg-surface border border-subtle rounded-lg p-6 text-center select-none font-sans">
+        <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase block mb-4 text-left">
+          CORRELATION MATRIX
+        </span>
+        <p className="text-xs text-[var(--text-muted)] py-8">Correlation matrix is not available.</p>
+      </div>
     );
   }
 
   const tickers = assets.map(a => a.ticker);
 
-  const getStyle = (value: number) => {
-    if (value === 1) {
+  const getStyle = (value: number, rowTicker: string, colTicker: string) => {
+    if (rowTicker === colTicker) {
       return { 
-        backgroundColor: isDark ? '#27272a' : '#e7e8e9', 
-        color: isDark ? '#ffffff' : '#191c1d',
-        fontWeight: 'bold' as const
+        backgroundColor: 'var(--bg-elevated)', 
+        color: 'var(--text-muted)',
+        fontFamily: 'IBM Plex Mono',
+        fontSize: '13px'
       };
     }
     const absVal = Math.abs(value);
-    const opacity = Math.max(0.15, absVal * 0.85);
+    // Opacity mapped: Math.abs(correlation) * 0.6 — never full saturation
+    const opacity = absVal * 0.6;
     if (value > 0) {
-      // Green scale
-      const textColor = opacity > 0.5 ? '#ffffff' : (isDark ? '#e5e2e1' : '#191c1d');
+      // Accent blue scale (rgba(79, 142, 247, opacity))
       return { 
-        backgroundColor: `rgba(34, 197, 94, ${opacity})`, 
-        color: textColor,
-        fontWeight: '500' as const
+        backgroundColor: `rgba(79, 142, 247, ${opacity})`, 
+        color: 'var(--text-primary)',
+        fontFamily: 'IBM Plex Mono',
+        fontSize: '13px',
+        fontWeight: 500
       };
     } else {
-      // Red scale
-      const textColor = opacity > 0.5 ? '#ffffff' : (isDark ? '#e5e2e1' : '#191c1d');
+      // Negative red scale (rgba(248, 113, 113, opacity))
       return { 
-        backgroundColor: `rgba(239, 68, 68, ${opacity})`, 
-        color: textColor,
-        fontWeight: '500' as const
+        backgroundColor: `rgba(248, 113, 113, ${opacity})`, 
+        color: 'var(--text-primary)',
+        fontFamily: 'IBM Plex Mono',
+        fontSize: '13px',
+        fontWeight: 500
       };
     }
   };
 
   return (
-    <Card className="bg-card border-border shadow-xl h-full flex flex-col overflow-hidden">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Correlation Matrix</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-x-auto mt-4">
-        <div className="min-w-max border rounded-lg border-border overflow-hidden">
-          <table className="w-full border-collapse text-sm">
+    <div className="bg-surface border border-subtle rounded-lg p-5 select-none w-full">
+      <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase block mb-4">
+        CROSS-ASSET CORRELATION MATRIX
+      </span>
+      <div className="overflow-x-auto w-full pt-2">
+        <div className="min-w-max border border-subtle rounded-md overflow-hidden bg-base">
+          <table className="w-full border-collapse table-fixed">
             <thead>
-              <tr>
-                <th className="bg-muted p-2 border-b border-r border-border"></th>
+              <tr className="border-b border-subtle">
+                <th className="bg-surface p-3 border-r border-subtle w-24"></th>
                 {tickers.map(t => (
-                  <th key={t} className="bg-muted p-2 font-medium text-center border-b border-border text-on-surface">{t}</th>
+                  <th 
+                    key={t} 
+                    className="bg-surface px-3 py-2.5 font-mono text-[11px] text-[var(--text-muted)] text-center w-24"
+                  >
+                    {t}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {tickers.map((rowTicker, i) => (
-                <tr key={rowTicker}>
-                  <th className="bg-muted p-2 font-medium text-left border-r border-border border-b text-on-surface">{rowTicker}</th>
+              {tickers.map((rowTicker) => (
+                <tr key={rowTicker} className="border-b border-subtle last:border-b-0">
+                  <th 
+                    className="bg-surface px-3 py-2.5 font-mono text-[11px] text-[var(--text-muted)] text-left border-r border-subtle"
+                  >
+                    {rowTicker}
+                  </th>
                   {tickers.map((colTicker) => {
                     const val = matrix[rowTicker]?.[colTicker] ?? 0;
-                    const isLastRow = i === tickers.length - 1;
                     return (
                       <td 
                         key={colTicker} 
-                        className={`p-3 text-center transition-colors ${!isLastRow ? 'border-b border-border/50' : ''}`}
-                        style={getStyle(val)}
+                        className="h-14 p-2 text-center"
+                        style={getStyle(val, rowTicker, colTicker)}
                       >
                         {val.toFixed(2)}
                       </td>
@@ -98,7 +99,7 @@ export function CorrelationHeatmap({ matrix, assets }: Props) {
             </tbody>
           </table>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Outfit, JetBrains_Mono } from "next/font/google";
+import { Instrument_Serif, DM_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const sans = Plus_Jakarta_Sans({ 
+const serif = Instrument_Serif({ 
+  subsets: ["latin"], 
+  weight: ["400"],
+  style: ["normal", "italic"],
+  variable: "--font-serif" 
+});
+
+const sans = DM_Sans({ 
   subsets: ["latin"], 
   variable: "--font-sans" 
 });
 
-const display = Outfit({ 
+const mono = IBM_Plex_Mono({ 
   subsets: ["latin"], 
-  variable: "--font-display" 
-});
-
-const mono = JetBrains_Mono({ 
-  subsets: ["latin"], 
+  weight: ["400", "500", "600"],
   variable: "--font-mono" 
 });
 
@@ -32,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${sans.variable} ${display.variable} ${mono.variable} font-sans min-h-screen bg-background text-on-background antialiased overflow-x-hidden selection:bg-primary selection:text-on-primary`}>
+      <body className={`${sans.variable} ${serif.variable} ${mono.variable} font-sans min-h-screen bg-background text-foreground antialiased overflow-x-hidden selection:bg-accent selection:text-white`}>
         <Providers>
           <AppLayout>{children}</AppLayout>
         </Providers>
@@ -40,3 +43,4 @@ export default function RootLayout({
     </html>
   );
 }
+

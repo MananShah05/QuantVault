@@ -1,12 +1,32 @@
 "use client";
 
 import { MetricsResponse } from "@/types";
-import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts";
-
+import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 
-const PALETTE = ["#60A5FA", "#34D399", "#FBBF24", "#F87171", "#A78BFA"];
+// Series colors
+const PALETTE = ["#4f8ef7", "#34d399", "#f59e0b", "#a78bfa", "#f87171"];
+
+const CHART_THEME = {
+  background: 'transparent',
+  gridColor: 'rgba(255,255,255,0.04)',
+  axisColor: 'rgba(255,255,255,0)',
+  tickColor: 'var(--text-muted)',
+  tickFont: { fontFamily: 'IBM Plex Mono', fontSize: 10 },
+  tooltip: {
+    contentStyle: {
+      background: 'var(--bg-surface)',
+      border: '1px solid var(--border-default)',
+      borderRadius: '6px',
+      fontFamily: 'IBM Plex Mono',
+      fontSize: '12px',
+      padding: '10px 14px',
+    },
+    labelStyle: { color: '#94a3b8', marginBottom: '6px' },
+    itemStyle: { color: 'var(--text-primary)' },
+  }
+};
 
 interface VolatilityChartProps {
   metrics: MetricsResponse;
@@ -51,45 +71,132 @@ export function VolatilityChart({ metrics, selectedRange, onRangeChange, showRan
   }, [metrics]);
 
   const isDark = !mounted || theme === "dark";
-  const portfolioColor = isDark ? "#FFFFFF" : "#191c1d";
-  const gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
-  const tooltipBg = isDark ? "#1c1b1b" : "#ffffff";
-  const tooltipBorder = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+  const portfolioColor = isDark ? "var(--text-primary)" : "var(--bg-base)";
+  const gridColor = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
+
+  // Format date helper (MMM 'YY)
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      const m = d.toLocaleDateString('en-US', { month: 'short' });
+      const y = d.toLocaleDateString('en-US', { year: '2-digit' });
+      return `${m} '${y}`;
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
-    <div className="h-full flex flex-col">
-        {showRangeControls && <div className="flex bg-surface-container rounded-lg p-1 mb-4 border border-border/40 self-start">
+    <div className="h-full flex flex-col w-full">
+      {showRangeControls && (
+        <div className="flex bg-elevated border border-default p-0.5 rounded-md h-8 items-center self-start mb-4">
           {(["1M", "3M", "6M", "1Y"] as const).map(range => (
             <button
               key={range} 
-              className={`h-7 px-3 text-xs rounded-md transition-all ${selectedRange === range ? "bg-accent shadow-sm font-bold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`h-7 px-3 font-mono text-[11px] rounded transition-colors ${
+                selectedRange === range 
+                  ? "text-[#4f8ef7] bg-[#4f8ef7]/12 font-semibold" 
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              }`}
               onClick={() => onRangeChange(range)}
             >
               {range}
             </button>
           ))}
-        </div>}
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
-              <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, {month:'short', day:'numeric'})} />
-              <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val.toFixed(0)}%`} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: tooltipBg, borderColor: tooltipBorder, borderRadius: "8px" }}
-                itemStyle={{ fontSize: "12px", color: isDark ? "#ffffff" : "#191c1d" }}
-                labelStyle={{ fontSize: "12px", color: "#888888", marginBottom: "4px" }}
-                formatter={(value: number) => [`${value.toFixed(2)}%`]}
-              />
-              <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }} />
-              
-              <Line type="monotone" dataKey="Portfolio" stroke={portfolioColor} strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
-              {tickers.map((ticker, i) => (
-                <Line key={ticker} type="monotone" dataKey={ticker} stroke={PALETTE[i % PALETTE.length]} strokeWidth={1.5} dot={false} />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
         </div>
+      )}
+      
+      <div className="h-[240px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart 
+            key={metrics.portfolio_id}
+            data={chartData} 
+            margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="0" stroke={gridColor} vertical={false} />
+            
+            <XAxis 
+              dataKey="date" 
+              stroke={CHART_THEME.tickColor} 
+              fontSize={10} 
+              fontFamily={CHART_THEME.tickFont.fontFamily}
+              tickLine={false} 
+              axisLine={false} 
+              tickFormatter={formatDate}
+              dy={8}
+            />
+            
+            <YAxis 
+              stroke={CHART_THEME.tickColor} 
+              fontSize={10} 
+              fontFamily={CHART_THEME.tickFont.fontFamily}
+              tickLine={false} 
+              axisLine={false} 
+              tickFormatter={(val) => `${val.toFixed(1)}%`}
+              orientation="right"
+            />
+            
+            <Tooltip 
+              contentStyle={CHART_THEME.tooltip.contentStyle}
+              labelStyle={CHART_THEME.tooltip.labelStyle}
+              itemStyle={CHART_THEME.tooltip.itemStyle}
+              formatter={(value: number) => [`${value.toFixed(2)}%`]}
+            />
+            
+            <Legend 
+              verticalAlign="top"
+              align="right"
+              wrapperStyle={{ 
+                fontSize: "12px", 
+                fontFamily: "DM Sans", 
+                paddingBottom: "15px" 
+              }} 
+              iconType="circle"
+              iconSize={8}
+            />
+
+            <ReferenceLine 
+              y={20} 
+              stroke="rgba(251, 191, 36, 0.3)" 
+              strokeDasharray="4 3" 
+              label={{ 
+                value: '20% threshold', 
+                fill: '#fbbf24', 
+                fontSize: 9, 
+                fontFamily: 'IBM Plex Mono', 
+                position: 'insideBottomRight' 
+              }} 
+            />
+
+            {tickers.map((ticker, i) => (
+              <Line 
+                key={ticker} 
+                type="monotone" 
+                dataKey={ticker} 
+                stroke={PALETTE[i % PALETTE.length]} 
+                strokeWidth={1.2} 
+                dot={false} 
+                activeDot={{ r: 4, strokeWidth: 0, fill: PALETTE[i % PALETTE.length] }}
+                isAnimationActive={true}
+                animationDuration={700}
+                animationEasing="ease-out"
+              />
+            ))}
+            
+            <Line 
+              type="monotone" 
+              dataKey="Portfolio" 
+              stroke={portfolioColor} 
+              strokeWidth={2} 
+              dot={false} 
+              activeDot={{ r: 4, strokeWidth: 0, fill: portfolioColor }}
+              isAnimationActive={true}
+              animationDuration={700}
+              animationEasing="ease-out"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

@@ -1,189 +1,175 @@
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&display=swap');
-
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
 @layer base {
-  .theme {
-    --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
-  }
   :root {
-    --on-secondary-fixed: #1a1b22;
-    --tertiary-container: #9299ad;
-    --on-tertiary-fixed-variant: #404758;
-    --background: #f8f9fa;
-    --on-secondary: #ffffff;
-    --on-background: #191c1d;
-    --error-container: #ffdad6;
-    --primary: #705c2d;
-    --primary-fixed-dim: #dfc38b;
-    --surface-bright: #f8f9fa;
-    --on-primary: #ffffff;
-    --outline: #7e7669;
-    --on-surface: #191c1d;
-    --tertiary-fixed: #dce2f7;
-    --inverse-surface: #2e3132;
-    --on-tertiary-fixed: #141b2b;
-    --on-error-container: #93000a;
-    --surface-tint: #705c2d;
-    --tertiary-fixed-dim: #c0c6db;
-    --on-surface-variant: #4c463a;
-    --surface-variant: #e1e3e4;
-    --inverse-on-surface: #f0f1f2;
-    --on-primary-container: #3f2f04;
-    --surface-dim: #d9dadb;
-    --secondary-fixed-dim: #c6c5cf;
-    --error: #ba1a1a;
-    --secondary-container: #e3e1ec;
-    --inverse-primary: #dfc38b;
-    --surface: #f8f9fa;
-    --surface-container-highest: #e1e3e4;
-    --on-error: #ffffff;
-    --on-tertiary-container: #2a3141;
-    --on-primary-fixed-variant: #574418;
-    --tertiary: #575e70;
-    --secondary-fixed: #e3e1ec;
-    --surface-container-lowest: #ffffff;
-    --on-secondary-container: #63646c;
-    --secondary: #5d5e66;
-    --surface-container-low: #f3f4f5;
-    --outline-variant: #cfc5b6;
-    --primary-fixed: #fcdfa5;
-    --on-tertiary: #ffffff;
-    --surface-container-high: #e7e8e9;
-    --on-primary-fixed: #251a00;
-    --on-secondary-fixed-variant: #46464e;
-    --primary-container: #af9662;
-    --surface-container: #edeeef;
-    --border: #cfc5b6;
-    --input: #e1e3e4;
-    --ring: #705c2d;
-    --foreground: #191c1d;
-    --destructive: #ba1a1a;
-    --destructive-foreground: #ffffff;
-    --muted: #f3f4f5;
-    --muted-foreground: #4c463a;
-    --accent: #e7e8e9;
-    --accent-foreground: #191c1d;
-    --popover: #ffffff;
-    --popover-foreground: #191c1d;
-    --card: #ffffff;
-    --card-foreground: #191c1d;
+    /* Base surfaces */
+    --bg-base:         #111827;   /* deepest background */
+    --bg-surface:      #182235;   /* card / panel background */
+    --bg-elevated:     #223049;   /* hover states, nested panels */
+    --bg-overlay:      #2a3a55;   /* modals, dropdowns */
+
+    /* Borders */
+    --border-subtle:   rgba(226, 232, 240, 0.10);
+    --border-default:  rgba(226, 232, 240, 0.18);
+    --border-strong:   rgba(226, 232, 240, 0.30);
+
+    /* Text */
+    --text-primary:    #f8fafc;
+    --text-secondary:  #cbd5e1;
+    --text-muted:      #94a3b8;
+
+    /* Accent — singular, used sparingly */
+    --accent:          #60a5fa;       /* blue — primary actions, active states */
+    --accent-foreground: #ffffff;
+    --accent-dim:      rgba(96, 165, 250, 0.16);
+    --accent-border:   rgba(96, 165, 250, 0.38);
+
+    /* Semantic */
+    --positive:        #34d399;   /* gains, good Sharpe */
+    --positive-dim:    rgba(52, 211, 153, 0.1);
+    --negative:        #f87171;   /* losses, drawdowns */
+    --negative-dim:    rgba(248, 113, 113, 0.1);
+    --warning:         #fbbf24;   /* elevated risk */
+    --warning-dim:     rgba(251, 191, 36, 0.1);
+    --neutral:         #cbd5e1;
+
+    /* Chart series */
+    --series-1:        #60a5fa;   /* blue */
+    --series-2:        #34d399;   /* green */
+    --series-3:        #f59e0b;   /* amber */
+    --series-4:        #a78bfa;   /* purple */
+    --series-5:        #f87171;   /* red */
+    --series-portfolio: #f8fafc;  /* near-white, bold, 2px */
+
+    /* Background patterns */
+    --radial-glow:     radial-gradient(ellipse 80% 40% at 50% 0%, rgba(96, 165, 250, 0.06) 0%, transparent 62%);
+    --dot-grid:        radial-gradient(circle, rgba(226, 232, 240, 0.04) 1px, transparent 1px);
+
+    /* Shadcn system integration */
+    --background: var(--bg-base);
+    --foreground: var(--text-primary);
+    --border: var(--border-default);
+    --input: var(--border-default);
+    --ring: var(--accent);
+    --primary: var(--accent);
     --primary-foreground: #ffffff;
-    --secondary-foreground: #ffffff;
+    --secondary: var(--bg-surface);
+    --secondary-foreground: var(--text-primary);
+    --muted: var(--bg-elevated);
+    --muted-foreground: var(--text-secondary);
+    --popover: var(--bg-overlay);
+    --popover-foreground: var(--text-primary);
+    --card: var(--bg-surface);
+    --card-foreground: var(--text-primary);
+    --destructive: var(--negative);
+    --destructive-foreground: #ffffff;
   }
-  .dark {
-    --outline: #9a8f80;
-    --primary: #e9c176;
-    --primary-foreground: #412d00;
-    --on-secondary-fixed-variant: #454747;
-    --on-tertiary-fixed-variant: #474646;
-    --secondary: #c6c6c6;
-    --secondary-foreground: #2f3131;
-    --on-secondary-fixed: #1a1c1c;
-    --secondary-container: #454747;
-    --on-tertiary-fixed: #1c1b1b;
-    --on-tertiary: #313030;
-    --tertiary-fixed: #e5e2e1;
-    --surface-container: #201f1f;
-    --secondary-fixed: #e2e2e2;
-    --primary-fixed: #ffdea5;
-    --on-error-container: #ffdad6;
-    --tertiary-fixed-dim: #c8c6c5;
-    --surface-container-low: #1c1b1b;
-    --secondary-fixed-dim: #c6c6c6;
-    --surface-tint: #e9c176;
-    --on-tertiary-container: #3c3b3b;
-    --on-surface: #e5e2e1;
-    --on-background: #e5e2e1;
-    --on-surface-variant: #d1c5b4;
-    --on-primary-fixed: #261900;
-    --outline-variant: #4e4639;
-    --on-error: #690005;
-    --on-primary-fixed-variant: #5d4201;
-    --primary-container: #c5a059;
-    --inverse-on-surface: #313030;
-    --primary-fixed-dim: #e9c176;
-    --inverse-primary: #775a19;
-    --surface-variant: #353534;
-    --surface-container-highest: #353534;
-    --inverse-surface: #e5e2e1;
-    --surface: #131313;
-    --error-container: #93000a;
-    --background: #131313;
-    --on-secondary-container: #b5b5b5;
-    --on-secondary: #2f3131;
-    --on-primary-container: #4e3700;
-    --surface-dim: #131313;
-    --surface-bright: #3a3939;
-    --on-primary: #412d00;
-    --surface-container-lowest: #0e0e0e;
-    --tertiary-container: #a7a5a5;
-    --tertiary: #c8c6c5;
-    --error: #ffb4ab;
-    --surface-container-high: #2a2a2a;
-    --border: #4e4639;
-    --input: #353534;
-    --ring: #e9c176;
-    --foreground: #e5e2e1;
-    --destructive: #93000a;
-    --destructive-foreground: #ffdad6;
-    --muted: #201f1f;
-    --muted-foreground: #d1c5b4;
-    --accent: #454747;
-    --accent-foreground: #e5e2e1;
-    --popover: #201f1f;
-    --popover-foreground: #e5e2e1;
-    --card: #1c1b1b;
-    --card-foreground: #e5e2e1;
+
+  .light {
+    /* Base surfaces */
+    --bg-base:         #f4f6fa;   /* clean light gray background */
+    --bg-surface:      #ffffff;   /* panel background */
+    --bg-elevated:     #edf2f7;   /* hover states, nested panels */
+    --bg-overlay:      #ffffff;   /* modals, dropdowns */
+
+    /* Borders */
+    --border-subtle:   rgba(15, 23, 42, 0.04);
+    --border-default:  rgba(15, 23, 42, 0.08);
+    --border-strong:   rgba(15, 23, 42, 0.16);
+
+    /* Text */
+    --text-primary:    #0f172a;
+    --text-secondary:  #4a5568;
+    --text-muted:      #718096;
+
+    /* Accent */
+    --accent:          #2563eb;       /* clearer blue for light background */
+    --accent-foreground: #ffffff;
+    --accent-dim:      rgba(37, 99, 235, 0.08);
+    --accent-border:   rgba(37, 99, 235, 0.2);
+
+    /* Semantic */
+    --positive:        #059669;
+    --positive-dim:    rgba(5, 150, 105, 0.08);
+    --negative:        #dc2626;
+    --negative-dim:    rgba(220, 38, 38, 0.08);
+    --warning:         #d97706;
+    --warning-dim:     rgba(217, 119, 6, 0.08);
+    --neutral:         #64748b;
+
+    /* Chart series */
+    --series-1:        #2563eb;
+    --series-2:        #059669;
+    --series-3:        #d97706;
+    --series-4:        #7c3aed;
+    --series-5:        #dc2626;
+    --series-portfolio: #0f172a;
+
+    /* Background patterns */
+    --radial-glow:     radial-gradient(ellipse 80% 40% at 50% 0%, rgba(37, 99, 235, 0.02) 0%, transparent 60%);
+    --dot-grid:        radial-gradient(circle, rgba(15, 23, 42, 0.025) 1px, transparent 1px);
+
+    /* Shadcn system integration */
+    --background: var(--bg-base);
+    --foreground: var(--text-primary);
+    --border: var(--border-default);
+    --input: var(--border-default);
+    --ring: var(--accent);
+    --primary: var(--accent);
+    --primary-foreground: #ffffff;
+    --secondary: var(--bg-surface);
+    --secondary-foreground: var(--text-primary);
+    --muted: var(--bg-elevated);
+    --muted-foreground: var(--text-secondary);
+    --popover: var(--bg-overlay);
+    --popover-foreground: var(--text-primary);
+    --card: var(--bg-surface);
+    --card-foreground: var(--text-primary);
+    --destructive: var(--negative);
+    --destructive-foreground: #ffffff;
   }
+
   * {
     @apply border-border outline-ring;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground relative min-h-screen;
+    background-image: var(--radial-glow);
   }
-  html {
-    @apply font-sans;
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: var(--dot-grid);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
   }
 }
 
-/* Custom UI Utilities for the new design */
+/* Custom UI Utilities for Obsidian Bloomberg */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-.dark .glass-panel {
-  background: rgba(19, 19, 19, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-.platinum-gradient {
-  background: linear-gradient(135deg, rgba(233, 193, 118, 0.1) 0%, rgba(19, 19, 19, 0) 100%);
-}
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
+  height: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.01);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(233, 193, 118, 0.2);
+  background: var(--border-strong);
 }
 
 /* Disable number spinner */
@@ -193,49 +179,71 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
-/* Hide scrollbar globally */
+/* Hide scrollbar globally but allow on scrollable regions */
 ::-webkit-scrollbar {
-    display: none;
+  width: 4px;
+  height: 4px;
 }
-* {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.report-section {
-  break-inside: avoid;
-  page-break-inside: avoid;
+/* Skeleton animation */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
 }
 
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-elevated) 0%, var(--bg-overlay) 50%, var(--bg-elevated) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Print/PDF Export Overrides */
 @media print {
+  :root {
+    --bg-base:         #ffffff !important;
+    --bg-surface:      #ffffff !important;
+    --bg-elevated:     #f8fafc !important;
+    --bg-overlay:      #ffffff !important;
+    --border-subtle:   #e2e8f0 !important;
+    --border-default:  #cbd5e1 !important;
+    --border-strong:   #94a3b8 !important;
+    --text-primary:    #0f172a !important;
+    --text-secondary:  #475569 !important;
+    --text-muted:      #64748b !important;
+    --accent:          #1d4ed8 !important;
+    --series-portfolio: #0f172a !important;
+  }
+
   body {
-    background: #ffffff;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  body::before {
+    display: none !important;
   }
 
   .report-page {
-    background: #ffffff;
-    color: #191c1d;
-  }
-
-  .report-page .glass-panel {
-    box-shadow: none;
-    backdrop-filter: none;
-    border-color: rgba(0, 0, 0, 0.12);
-  }
-
-  .report-section {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    background: #ffffff !important;
+    color: #0f172a !important;
   }
 }
 
-/* PDF Export Overrides to fix clipping, color rendering, and glassmorphism bugs */
 .pdf-export-active {
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
   width: 1100px !important;
   max-width: 1100px !important;
-  background: var(--background) !important;
+  background: var(--bg-base) !important;
 }
 
 .pdf-export-active * {
@@ -243,16 +251,14 @@ input[type="number"]::-webkit-outer-spin-button {
   print-color-adjust: exact !important;
 }
 
-/* Flatten glassmorphic layers to prevent opaque black/gray canvas rendering artifacts */
 .pdf-export-active .glass-panel {
-  background: var(--surface-container) !important;
+  background: var(--bg-surface) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
-  border: 1px solid var(--border) !important;
+  border: 1px solid var(--border-default) !important;
 }
 
-/* Explicit PDF Page Break Styling */
 .pdf-page-break {
   page-break-before: always !important;
   break-before: page !important;
@@ -262,12 +268,9 @@ input[type="number"]::-webkit-outer-spin-button {
   border: none !important;
 }
 
-/* Helper to render elements exclusive to the exported PDF (e.g. running headers/footers) */
 .pdf-export-only {
   display: none !important;
 }
 .pdf-export-active .pdf-export-only {
   display: flex !important;
 }
-
-

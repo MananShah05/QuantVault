@@ -8,3 +8,6 @@ stitch_downloads/
 # Python
 __pycache__/
 *.pyc
+
+
+.vscode/

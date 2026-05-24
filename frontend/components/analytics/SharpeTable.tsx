@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { SnapshotResponse, Asset } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type SortField = "ticker" | "ann_ret" | "vol" | "sharpe" | "dd";
 type SortOrder = "asc" | "desc";
@@ -48,48 +47,67 @@ export function SharpeTable({ snapshot, assets }: { snapshot: SnapshotResponse, 
   const formatPct = (val: number | null) => val !== null ? `${(val * 100).toFixed(2)}%` : "N/A";
   const formatNum = (val: number | null) => val !== null ? val.toFixed(2) : "N/A";
 
-  const getReturnColor = (val: number | null) => val && val >= 0 ? "text-green-500" : "text-red-500";
-  const getSharpeColor = (val: number | null) => val && val > 1 ? "text-green-500" : (val && val > 0.5 ? "text-amber-500" : "text-red-500");
+  const getReturnColor = (val: number | null) => val && val >= 0 ? "text-positive" : "text-negative";
+  const getSharpeColor = (val: number | null) => val && val > 1 ? "text-positive" : (val && val > 0.5 ? "text-warning" : "text-negative");
 
-  const SortHeader = ({ field, label, right = false }: { field: SortField, label: string, right?: boolean }) => (
-    <TableHead className={right ? "text-right cursor-pointer hover:bg-accent" : "cursor-pointer hover:bg-accent"} onClick={() => handleSort(field)}>
-      <div className={`flex items-center gap-1 ${right ? "justify-end" : ""}`}>
-        {label} <ArrowUpDown className="h-3 w-3 opacity-50" />
-      </div>
-    </TableHead>
-  );
+  const SortHeader = ({ field, label, right = false }: { field: SortField, label: string, right?: boolean }) => {
+    const isSorted = sortField === field;
+    return (
+      <th 
+        className={`px-4 py-2.5 font-sans text-[10px] font-medium uppercase tracking-[0.1em] cursor-pointer transition-colors ${
+          isSorted ? "text-accent" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+        } ${right ? "text-right" : "text-left"}`} 
+        onClick={() => handleSort(field)}
+      >
+        <div className={`flex items-center gap-1 ${right ? "justify-end" : "justify-start"}`}>
+          <span>{label}</span>
+          {isSorted ? (
+            sortOrder === "asc" ? <ArrowUp size={10} className="text-accent" /> : <ArrowDown size={10} className="text-accent" />
+          ) : (
+            <ArrowUpDown size={10} className="opacity-40" />
+          )}
+        </div>
+      </th>
+    );
+  };
 
   return (
-    <Card className="bg-card border-border shadow-xl h-full flex flex-col">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Risk/Return Profile</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 mt-4">
-        <div className="rounded-md border border-border overflow-hidden">
-          <Table>
-            <TableHeader className="bg-muted">
-              <TableRow className="border-border hover:bg-transparent">
+    <div className="bg-surface border border-subtle rounded-lg p-5 flex flex-col justify-between h-full select-none w-full">
+      <div>
+        <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase block mb-4">
+          RISK & RETURN ATTRIBUTION
+        </span>
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-subtle">
                 <SortHeader field="ticker" label="Asset" />
                 <SortHeader field="ann_ret" label="Ann. Return" right />
                 <SortHeader field="vol" label="Volatility" right />
                 <SortHeader field="sharpe" label="Sharpe" right />
                 <SortHeader field="dd" label="Max DD" right />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((row) => (
-                <TableRow key={row.ticker} className="border-border/50 hover:bg-accent/50">
-                  <TableCell className="font-medium">{row.ticker}</TableCell>
-                  <TableCell className={`text-right ${getReturnColor(row.ann_ret)}`}>{formatPct(row.ann_ret)}</TableCell>
-                  <TableCell className="text-right">{formatPct(row.vol)}</TableCell>
-                  <TableCell className={`text-right font-medium ${getSharpeColor(row.sharpe)}`}>{formatNum(row.sharpe)}</TableCell>
-                  <TableCell className="text-right text-red-500 font-medium">{formatPct(row.dd)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-subtle/50">
+              <AnimatePresence>
+                {data.map((row) => (
+                  <motion.tr 
+                    key={row.ticker} 
+                    layout
+                    className="hover:bg-elevated transition-colors duration-100 group"
+                  >
+                    <td className="px-4 py-3 font-mono text-[13px] text-[var(--text-primary)] font-medium">{row.ticker}</td>
+                    <td className={`px-4 py-3 text-right font-mono text-[13px] ${getReturnColor(row.ann_ret)}`}>{formatPct(row.ann_ret)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-[13px] text-[var(--text-secondary)]">{formatPct(row.vol)}</td>
+                    <td className={`px-4 py-3 text-right font-mono text-[13px] font-semibold ${getSharpeColor(row.sharpe)}`}>{formatNum(row.sharpe)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-[13px] text-negative font-medium">{formatPct(row.dd)}</td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
+            </tbody>
+          </table>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

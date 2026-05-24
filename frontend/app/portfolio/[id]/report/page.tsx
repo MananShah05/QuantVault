@@ -69,76 +69,82 @@ export default function PortfolioReportPage({ params }: { params: { id: string }
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-background p-10 text-on-surface">
-        <div className="mx-auto max-w-[1100px] glass-panel p-10">Preparing institutional report...</div>
+      <main className="min-h-screen bg-transparent p-10 text-[var(--text-primary)]">
+        <div className="mx-auto max-w-[1100px] bg-surface border border-subtle rounded-lg p-10 font-sans text-xs">
+          Preparing institutional report...
+        </div>
       </main>
     );
   }
 
   if (!portfolio || !metrics || !snapshot || !allocation) {
     return (
-      <main className="min-h-screen bg-background p-10 text-on-surface">
-        <div className="mx-auto max-w-[1100px] glass-panel p-10 text-error">Report data is unavailable.</div>
+      <main className="min-h-screen bg-transparent p-10 text-[var(--text-primary)]">
+        <div className="mx-auto max-w-[1100px] bg-surface border border-subtle rounded-lg p-10 text-negative font-sans text-xs">
+          Report data is unavailable.
+        </div>
       </main>
     );
   }
 
   return (
-    <main data-report-ready="true" className="report-page min-h-screen bg-background text-on-surface">
-      <div id="report-content" className="mx-auto max-w-[1100px] px-8 py-10 bg-background text-on-surface">
+    <main data-report-ready="true" className="report-page min-h-screen bg-transparent text-[var(--text-secondary)] font-sans">
+      <div id="report-content" className="mx-auto max-w-[1100px] px-8 py-10 bg-transparent text-[var(--text-secondary)]">
         {/* PAGE 1: Core Metrics & Returns Chart */}
-        <div className="flex flex-col gap-8">
-          <header className="report-section flex items-start justify-between gap-8 border-b border-border pb-8">
+        <div className="flex flex-col gap-6">
+          <header className="report-section flex items-start justify-between gap-8 border-b border-subtle pb-6">
             <div>
-              <p className="font-label-caps text-label-caps text-primary uppercase tracking-[0.2em]">QuantVault Institutional Report</p>
-              <h1 className="mt-3 font-display-lg text-display-lg">{portfolio.name}</h1>
-              <p className="mt-4 text-on-surface-variant">Generated {generatedAt} · Snapshot {snapshot.date || "not computed"}</p>
+              <p className="font-sans text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-[0.2em]">QuantVault Institutional Report</p>
+              <h1 className="mt-2 font-serif italic text-3xl text-[var(--text-primary)]">{portfolio.name}</h1>
+              <p className="mt-2 text-xs text-[var(--text-secondary)]">Generated {generatedAt} &bull; Snapshot {snapshot.date || "not computed"}</p>
             </div>
-            <div className="text-right flex flex-col items-end gap-4">
+            <div className="text-right flex flex-col items-end gap-3">
               <div>
-                <p className="font-label-caps text-label-caps text-on-surface-variant">Portfolio ID</p>
-                <p className="mt-2 max-w-[280px] break-all font-data-mono text-sm">{portfolio.id}</p>
+                <p className="font-sans text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Portfolio ID</p>
+                <p className="mt-1 max-w-[280px] break-all font-mono text-xs text-[var(--text-primary)]">{portfolio.id}</p>
               </div>
               <button 
                 onClick={handleDownload}
                 disabled={isDownloading}
                 data-html2canvas-ignore="true"
-                className="print:hidden flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg font-label-caps text-label-caps hover:bg-primary/90 transition-colors disabled:opacity-50"
+                className="print:hidden h-10 flex items-center gap-1.5 px-5 bg-accent hover:bg-[#3b7de8] text-white font-sans text-[13px] font-medium rounded-[6px] transition-all disabled:opacity-50"
               >
-                {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                {isDownloading ? "Generating..." : "Download Report"}
+                {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download size={14} />}
+                <span>{isDownloading ? "Generating..." : "Download Report"}</span>
               </button>
             </div>
           </header>
 
-          <section className="report-section grid grid-cols-4 gap-4">
+          <section className="report-section grid grid-cols-1 sm:grid-cols-4 gap-3">
             {[
               ["Annualized Return", formatPct(snapshot.annualized_return)],
               ["Volatility", formatPct(snapshot.portfolio_volatility)],
               ["Max Drawdown", formatPct(snapshot.max_drawdown)],
               ["Sharpe Ratio", formatNumber(snapshot.sharpe_ratio)],
             ].map(([label, value]) => (
-              <div key={label} className="glass-panel p-5">
-                <p className="font-label-caps text-label-caps text-on-surface-variant">{label}</p>
-                <p className="mt-4 font-data-mono text-[24px] text-primary">{value}</p>
+              <div key={label} className="bg-surface border border-subtle rounded-lg p-5">
+                <p className="font-sans text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider">{label}</p>
+                <p className="mt-3 font-mono text-[24px] font-semibold text-accent">{value}</p>
               </div>
             ))}
           </section>
 
-          <section className="report-section grid grid-cols-2 gap-4">
-            <div className="glass-panel p-5">
-              <p className="font-label-caps text-label-caps text-on-surface-variant">Relative Alpha</p>
-              <p className="mt-4 font-data-mono text-[24px] text-primary">{formatPct(latestAlpha)}</p>
+          <section className="report-section grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="bg-surface border border-subtle rounded-lg p-5">
+              <p className="font-sans text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider">Relative Alpha</p>
+              <p className="mt-3 font-mono text-[24px] font-semibold text-accent">{formatPct(latestAlpha)}</p>
             </div>
-            <div className="glass-panel p-5">
-              <p className="font-label-caps text-label-caps text-on-surface-variant">Tracking Difference</p>
-              <p className="mt-4 font-data-mono text-[24px] text-primary">{formatPct(latestTracking)}</p>
+            <div className="bg-surface border border-subtle rounded-lg p-5">
+              <p className="font-sans text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider">Tracking Difference</p>
+              <p className="mt-3 font-mono text-[24px] font-semibold text-accent">{formatPct(latestTracking)}</p>
             </div>
           </section>
 
-          <section className="report-section glass-panel p-8">
-            <h2 className="font-headline-md text-headline-md mb-6">Performance vs Benchmark</h2>
-            <ReturnsChart metrics={metrics} />
+          <section className="report-section bg-surface border border-subtle rounded-lg p-5 flex flex-col justify-between">
+            <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase mb-4 block">Performance vs Benchmark</span>
+            <div className="h-[280px]">
+              <ReturnsChart metrics={metrics} />
+            </div>
           </section>
         </div>
 
@@ -146,20 +152,24 @@ export default function PortfolioReportPage({ params }: { params: { id: string }
         <div className="pdf-page-break" />
 
         {/* PAGE 2: Risk Trends & Asset Allocation */}
-        <div className="flex flex-col gap-8 mt-10 pdf-export-active:mt-0 pdf-export-active:pt-4">
-          <div className="pdf-export-only justify-between items-center border-b border-border pb-2 text-on-surface-variant font-label-caps text-[10px] uppercase tracking-widest">
-            <span>QuantVault Institutional Report · {portfolio.name}</span>
+        <div className="flex flex-col gap-6 mt-10 pdf-export-active:mt-0 pdf-export-active:pt-4">
+          <div className="pdf-export-only justify-between items-center border-b border-subtle pb-2 text-[var(--text-muted)] font-sans text-[9px] uppercase tracking-widest">
+            <span>QuantVault Institutional Report &bull; {portfolio.name}</span>
             <span>Page 2</span>
           </div>
 
-          <section className="report-section grid grid-cols-2 gap-6">
-            <div className="glass-panel p-8">
-              <h2 className="font-headline-md text-headline-md mb-6">Volatility Trend</h2>
-              <VolatilityChart metrics={metrics} selectedRange={selectedRange} onRangeChange={() => undefined} showRangeControls={false} />
+          <section className="report-section grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-surface border border-subtle rounded-lg p-5">
+              <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase mb-3 block">Volatility Trend</span>
+              <div className="h-[220px]">
+                <VolatilityChart metrics={metrics} selectedRange={selectedRange} onRangeChange={() => undefined} showRangeControls={false} />
+              </div>
             </div>
-            <div className="glass-panel p-8">
-              <h2 className="font-headline-md text-headline-md mb-6">Drawdown Analytics</h2>
-              <DrawdownChart metrics={metrics} />
+            <div className="bg-surface border border-subtle rounded-lg p-5">
+              <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase mb-3 block">Drawdown Analytics</span>
+              <div className="h-[220px]">
+                <DrawdownChart metrics={metrics} />
+              </div>
             </div>
           </section>
 
@@ -172,13 +182,13 @@ export default function PortfolioReportPage({ params }: { params: { id: string }
         <div className="pdf-page-break" />
 
         {/* PAGE 3: Sharpe Table & Correlation Heatmap */}
-        <div className="flex flex-col gap-8 mt-10 pdf-export-active:mt-0 pdf-export-active:pt-4">
-          <div className="pdf-export-only justify-between items-center border-b border-border pb-2 text-on-surface-variant font-label-caps text-[10px] uppercase tracking-widest">
-            <span>QuantVault Institutional Report · {portfolio.name}</span>
+        <div className="flex flex-col gap-6 mt-10 pdf-export-active:mt-0 pdf-export-active:pt-4">
+          <div className="pdf-export-only justify-between items-center border-b border-subtle pb-2 text-[var(--text-muted)] font-sans text-[9px] uppercase tracking-widest">
+            <span>QuantVault Institutional Report &bull; {portfolio.name}</span>
             <span>Page 3</span>
           </div>
 
-          <section className="report-section grid grid-cols-2 gap-6">
+          <section className="report-section grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
             <div>
               <SharpeTable snapshot={snapshot} assets={portfolio.assets} />
             </div>

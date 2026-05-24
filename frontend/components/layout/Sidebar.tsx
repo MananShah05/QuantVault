@@ -3,19 +3,30 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppStore } from "@/store/appStore";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
+import { 
+  LayoutDashboard, 
+  TrendingUp, 
+  Activity, 
+  Plus, 
+  Settings, 
+  LogOut, 
+  PanelLeftClose, 
+  PanelLeftOpen 
+} from "lucide-react";
+import { MOTION } from "@/lib/motion";
 
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isSidebarOpen } = useAppStore();
+  const { isSidebarOpen, toggleSidebar } = useAppStore();
 
   const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
-    { name: "Analytics", href: "/analytics", icon: "analytics" },
-    { name: "Allocation", href: "/portfolio/new", icon: "pie_chart" },
-    { name: "Risk Stress", href: "/risk-stress", icon: "warning" },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Analytics", href: "/analytics", icon: TrendingUp },
+    { name: "Risk Stress", href: "/risk-stress", icon: Activity },
+    { name: "New Portfolio", href: "/portfolio/new", icon: Plus },
   ];
 
   const handleSignOut = async (e: React.MouseEvent) => {
@@ -25,72 +36,110 @@ export function Sidebar() {
   };
 
   return (
-    <aside className={`hidden md:flex flex-col h-screen sticky top-0 bg-surface-container-low border-r border-border transition-all duration-300 z-50 overflow-hidden ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
-      <div className="flex flex-col h-full py-4">
-        <div className="px-6 py-6 flex items-center justify-center min-h-[100px]">
-          <div className={`flex items-center gap-3 transition-all duration-300 ${isSidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0'}`}>
-            <span className="material-symbols-outlined text-primary text-3xl shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>
-              account_balance
-            </span>
-            <div className={`flex flex-col ${isSidebarOpen ? 'block' : 'hidden'}`}>
-              <span className="font-headline-lg text-headline-lg text-primary leading-tight">QuantVault</span>
-              <h3 className="font-label-caps text-label-caps text-primary uppercase tracking-widest mt-1 text-[10px]">Global Markets</h3>
-            </div>
+    <motion.aside 
+      initial={isSidebarOpen ? "open" : "closed"}
+      animate={isSidebarOpen ? "open" : "closed"}
+      variants={MOTION.sidebarExpand}
+      className="hidden md:flex flex-col h-screen sticky top-0 bg-surface border-r border-subtle transition-colors duration-300 z-50 overflow-hidden select-none"
+    >
+      <div className="flex flex-col h-full py-4 justify-between">
+        <div>
+          {/* Logo Area */}
+          <div className="h-14 px-6 flex items-center gap-3">
+            <div className="w-2.5 h-2.5 bg-accent shrink-0" />
+            <AnimatePresence mode="wait">
+              {isSidebarOpen && (
+                <motion.span 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="font-sans font-bold text-[13px] tracking-[0.2em] text-[var(--text-primary)] whitespace-nowrap"
+                >
+                  QUANTVAULT
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
-          {!isSidebarOpen && (
-            <span className="material-symbols-outlined text-primary text-3xl shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>
-              account_balance
-            </span>
-          )}
+          
+          {/* Navigation Section */}
+          <div className="mt-6">
+            {isSidebarOpen && (
+              <p className="px-6 text-[10px] font-sans font-medium tracking-[0.15em] text-[var(--text-muted)] uppercase mb-4">
+                NAVIGATION
+              </p>
+            )}
+            <nav className="px-3 space-y-2">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href || (item.href !== "/dashboard" && item.href !== "/portfolio/new" && pathname.startsWith(item.href));
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`relative h-10 flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center'} rounded-md transition-colors duration-150 font-sans text-[13px] font-medium group ${
+                      isActive 
+                        ? "text-[var(--text-primary)]" 
+                        : "text-[var(--text-secondary)] hover:bg-elevated hover:text-[var(--text-primary)]"
+                    }`}
+                    title={item.name}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="sidebar-active"
+                        transition={MOTION.navIndicator.transition}
+                        className="absolute left-0 top-0 bottom-0 w-[2px] bg-accent bg-opacity-100 rounded-none z-10"
+                      />
+                    )}
+                    {isActive && (
+                      <div className="absolute inset-0 bg-accent bg-opacity-[0.06] rounded-md -z-10" />
+                    )}
+                    <Icon 
+                      size={16} 
+                      className={`shrink-0 z-10 ${isActive ? "text-accent" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors"}`} 
+                    />
+                    {isSidebarOpen && (
+                      <span className="ml-3 truncate z-10">{item.name}</span>
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
         </div>
-        
-        <nav className="flex-1 px-2 space-y-2 mt-8 overflow-y-auto overflow-x-hidden custom-scrollbar">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== "#" && pathname.startsWith(item.href) && item.href !== "/dashboard" && item.href !== "/portfolio/new");
 
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`relative flex items-center ${isSidebarOpen ? 'justify-start px-4' : 'justify-center'} py-3 rounded-lg font-label-caps text-label-caps transition-colors duration-200 ${
-                  isActive
-                    ? "text-primary font-bold"
-                    : "text-on-surface-variant hover:text-on-surface"
-                }`}
-                title={item.name}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="sidebarActiveBg"
-                    className="absolute inset-0 bg-primary/10 border-r-2 border-primary rounded-lg -z-10"
-                    transition={{ type: "spring", stiffness: 350, damping: 28 }}
-                  />
-                )}
-                <span className="material-symbols-outlined shrink-0 z-10" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>
-                  {item.icon}
-                </span>
-                {isSidebarOpen && <span className="ml-4 truncate z-10">{item.name}</span>}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="px-2 py-6 border-t border-border">
-          <Link href="#" className={`flex items-center ${isSidebarOpen ? 'justify-start px-4' : 'justify-center'} py-3 rounded-lg text-on-surface-variant hover:bg-accent hover:text-on-surface font-label-caps text-label-caps transition-all duration-300`} title="Support">
-            <span className="material-symbols-outlined shrink-0">help</span>
-            {isSidebarOpen && <span className="ml-4 truncate">Support</span>}
+        {/* Bottom Area */}
+        <div className="px-3 space-y-2">
+          <Link 
+            href="/settings" 
+            className={`h-10 flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center'} rounded-md text-[var(--text-muted)] hover:bg-elevated hover:text-[var(--text-primary)] font-sans text-[13px] font-medium transition-colors`} 
+            title="Settings"
+          >
+            <Settings size={16} className="shrink-0" />
+            {isSidebarOpen && <span className="ml-3 truncate">Settings</span>}
           </Link>
           <button 
             onClick={handleSignOut}
-            className={`w-full flex items-center ${isSidebarOpen ? 'justify-start px-4' : 'justify-center'} py-3 rounded-lg text-on-surface-variant hover:bg-accent hover:text-on-surface font-label-caps text-label-caps transition-all duration-300`} 
+            className={`w-full h-10 flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center'} rounded-md text-[var(--text-muted)] hover:bg-elevated hover:text-[var(--text-primary)] font-sans text-[13px] font-medium transition-colors`} 
             title="Sign Out"
           >
-            <span className="material-symbols-outlined shrink-0">logout</span>
-            {isSidebarOpen && <span className="ml-4 truncate">Sign Out</span>}
+            <LogOut size={16} className="shrink-0" />
+            {isSidebarOpen && <span className="ml-3 truncate">Sign Out</span>}
           </button>
+
+          {/* Collapse Toggle */}
+          <div className="flex justify-end pt-4 border-t border-subtle mt-4">
+            <button
+              onClick={toggleSidebar}
+              className="w-7 h-7 bg-elevated border border-default flex items-center justify-center hover:border-strong transition-colors rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              title={isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+            >
+              {isSidebarOpen ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
+            </button>
+          </div>
         </div>
       </div>
-    </aside>
+    </motion.aside>
   );
 }
-

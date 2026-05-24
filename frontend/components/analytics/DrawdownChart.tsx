@@ -2,9 +2,28 @@
 
 import { MetricsResponse } from "@/types";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
-
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
+
+const CHART_THEME = {
+  background: 'transparent',
+  gridColor: 'rgba(255,255,255,0.04)',
+  axisColor: 'rgba(255,255,255,0)',
+  tickColor: 'var(--text-muted)',
+  tickFont: { fontFamily: 'IBM Plex Mono', fontSize: 10 },
+  tooltip: {
+    contentStyle: {
+      background: 'var(--bg-surface)',
+      border: '1px solid var(--border-default)',
+      borderRadius: '6px',
+      fontFamily: 'IBM Plex Mono',
+      fontSize: '12px',
+      padding: '10px 14px',
+    },
+    labelStyle: { color: '#94a3b8', marginBottom: '6px' },
+    itemStyle: { color: 'var(--text-primary)' },
+  }
+};
 
 export function DrawdownChart({ metrics }: { metrics: MetricsResponse }) {
   const { theme } = useTheme();
@@ -28,35 +47,85 @@ export function DrawdownChart({ metrics }: { metrics: MetricsResponse }) {
   const minDrawdown = chartData.length ? Math.min(...chartData.map((d) => d.drawdown)) : 0;
 
   const isDark = !mounted || theme === "dark";
-  const gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
-  const tooltipBg = isDark ? "#1c1b1b" : "#ffffff";
-  const tooltipBorder = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+  const gridColor = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
+
+  // Format date helper (MMM 'YY)
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      const m = d.toLocaleDateString('en-US', { month: 'short' });
+      const y = d.toLocaleDateString('en-US', { year: '2-digit' });
+      return `${m} '${y}`;
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
-    <div className="h-full flex flex-col">
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-              <defs>
-                <linearGradient id="colorDd" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
-              <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, {month:'short'})} />
-              <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} domain={[minDrawdown * 1.1, 0]} tickFormatter={(val) => `${val.toFixed(0)}%`} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: tooltipBg, borderColor: tooltipBorder, borderRadius: "8px" }}
-                itemStyle={{ fontSize: "12px", color: isDark ? "#ffffff" : "#191c1d" }}
-                formatter={(value: number) => [`${value.toFixed(2)}%`, "Drawdown"]}
-                labelStyle={{ fontSize: "12px", color: "#888888" }}
-              />
-              <ReferenceLine y={minDrawdown} stroke="#ef4444" strokeDasharray="3 3" label={{ position: 'insideBottomRight', value: 'Max DD', fill: '#ef4444', fontSize: 12 }} />
-              <Area type="monotone" dataKey="drawdown" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colorDd)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+    <div className="h-full w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart 
+          key={metrics.portfolio_id}
+          data={chartData} 
+          margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="0" stroke={gridColor} vertical={false} />
+          
+          <XAxis 
+            dataKey="date" 
+            stroke={CHART_THEME.tickColor} 
+            fontSize={10} 
+            fontFamily={CHART_THEME.tickFont.fontFamily}
+            tickLine={false} 
+            axisLine={false} 
+            tickFormatter={formatDate}
+            dy={8}
+          />
+          
+          <YAxis 
+            stroke={CHART_THEME.tickColor} 
+            fontSize={10} 
+            fontFamily={CHART_THEME.tickFont.fontFamily}
+            tickLine={false} 
+            axisLine={false} 
+            domain={[minDrawdown * 1.1, 0]} 
+            tickFormatter={(val) => `${val.toFixed(0)}%`}
+            orientation="right"
+          />
+          
+          <Tooltip 
+            contentStyle={CHART_THEME.tooltip.contentStyle}
+            labelStyle={CHART_THEME.tooltip.labelStyle}
+            itemStyle={CHART_THEME.tooltip.itemStyle}
+            formatter={(value: number) => [`${value.toFixed(2)}%`, "Drawdown"]}
+          />
+          
+          <ReferenceLine 
+            y={minDrawdown} 
+            stroke="var(--negative)" 
+            strokeDasharray="4 3" 
+            label={{ 
+              position: 'insideBottomRight', 
+              value: `Max DD: ${minDrawdown.toFixed(1)}%`, 
+              fill: 'var(--negative)', 
+              fontSize: 10, 
+              fontFamily: 'IBM Plex Mono' 
+            }} 
+          />
+          
+          <Area 
+            type="monotone" 
+            dataKey="drawdown" 
+            stroke="var(--negative)" 
+            strokeWidth={1.5} 
+            fillOpacity={1} 
+            fill="rgba(248, 113, 113, 0.08)" 
+            isAnimationActive={true}
+            animationDuration={700}
+            animationEasing="ease-out"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }
