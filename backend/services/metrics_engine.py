@@ -52,22 +52,26 @@ def compute(
     cumulative_return = cumulative - 1
 
     # ── Build per-asset daily DataFrame ──
-    # We'll create a long-format DataFrame for easy DB storage
-    daily_records = []
-    for ticker in tickers:
-        for dt in returns.index:
-            daily_records.append({
-                "ticker": ticker,
-                "date": dt.date() if hasattr(dt, "date") else dt,
-                "price": float(prices.loc[dt, ticker]) if not pd.isna(prices.loc[dt, ticker]) else None,
-                "daily_return": _safe_float(returns.loc[dt, ticker]),
-                "rolling_vol_30d": _safe_float(rolling_vol_30d.loc[dt, ticker]),
-                "rolling_vol_60d": _safe_float(rolling_vol_60d.loc[dt, ticker]),
-                "drawdown": _safe_float(drawdown.loc[dt, ticker]),
-                "cumulative_return": _safe_float(cumulative_return.loc[dt, ticker]),
-            })
+    # Using pandas melt for vectorization (much faster than nested loops)
+    prices_melted = prices.reset_index().melt(id_vars="index", var_name="ticker", value_name="price")
+    returns_melted = returns.reset_index().melt(id_vars="index", var_name="ticker", value_name="daily_return")
+    vol30_melted = rolling_vol_30d.reset_index().melt(id_vars="index", var_name="ticker", value_name="rolling_vol_30d")
+    vol60_melted = rolling_vol_60d.reset_index().melt(id_vars="index", var_name="ticker", value_name="rolling_vol_60d")
+    drawdown_melted = drawdown.reset_index().melt(id_vars="index", var_name="ticker", value_name="drawdown")
+    cumret_melted = cumulative_return.reset_index().melt(id_vars="index", var_name="ticker", value_name="cumulative_return")
 
-    daily_df = pd.DataFrame(daily_records)
+    daily_df = prices_melted.merge(returns_melted, on=["index", "ticker"], how="inner")
+    daily_df = daily_df.merge(vol30_melted, on=["index", "ticker"], how="left")
+    daily_df = daily_df.merge(vol60_melted, on=["index", "ticker"], how="left")
+    daily_df = daily_df.merge(drawdown_melted, on=["index", "ticker"], how="left")
+    daily_df = daily_df.merge(cumret_melted, on=["index", "ticker"], how="left")
+
+    daily_df.rename(columns={"index": "date"}, inplace=True)
+    daily_df["date"] = daily_df["date"].apply(lambda dt: dt.date() if hasattr(dt, "date") else dt)
+
+    # Clean up types for DB storage
+    for col in ["daily_return", "rolling_vol_30d", "rolling_vol_60d", "drawdown", "cumulative_return"]:
+        daily_df[col] = daily_df[col].apply(_safe_float)
 
     # ── Portfolio-level metrics ──
     weight_series = pd.Series(weights)
@@ -79,20 +83,21 @@ def compute(
     portfolio_cumulative_return = portfolio_cumulative - 1
     portfolio_rolling_vol_30d = portfolio_returns.rolling(30).std() * np.sqrt(252)
 
-    portfolio_daily_records = []
-    for dt in portfolio_returns.index:
-        portfolio_daily_records.append({
-            "date": dt.date() if hasattr(dt, "date") else dt,
-            "portfolio_return": _safe_float(portfolio_returns.loc[dt]),
-            "rolling_vol_30d": _safe_float(portfolio_rolling_vol_30d.loc[dt]),
-            "drawdown": _safe_float(portfolio_drawdown.loc[dt]),
-            "cumulative_return": _safe_float(portfolio_cumulative_return.loc[dt]),
-        })
-
-    portfolio_daily_df = pd.DataFrame(portfolio_daily_records)
+    portfolio_daily_df = pd.DataFrame({
+        "date": portfolio_returns.index,
+        "portfolio_return": portfolio_returns.values,
+        "rolling_vol_30d": portfolio_rolling_vol_30d.values,
+        "drawdown": portfolio_drawdown.values,
+        "cumulative_return": portfolio_cumulative_return.values,
+    })
+    portfolio_daily_df["date"] = portfolio_daily_df["date"].apply(lambda dt: dt.date() if hasattr(dt, "date") else dt)
+    
+    # Clean up types
+    for col in ["portfolio_return", "rolling_vol_30d", "drawdown", "cumulative_return"]:
+        portfolio_daily_df[col] = portfolio_daily_df[col].apply(_safe_float)
 
     # ── Scalar aggregates (snapshot) ──
-    n_years = len(returns) / 252
+    n_years = max(len(returns) / 252, 0.001)
 
     # Per-asset annualized return
     per_asset_total_return = (1 + returns).prod() - 1
@@ -101,8 +106,8 @@ def compute(
     # Per-asset annualized volatility
     per_asset_annualized_vol = returns.std() * np.sqrt(252)
 
-    # Per-asset Sharpe ratio
-    per_asset_sharpe = (per_asset_annualized_return - risk_free_rate) / per_asset_annualized_vol
+    # Per-asset Sharpe ratio (with safety check for zero vol)
+    per_asset_sharpe = (per_asset_annualized_return - risk_free_rate) / per_asset_annualized_vol.replace(0, np.nan)
 
     # Per-asset max drawdown
     per_asset_max_drawdown = drawdown.min()
@@ -111,11 +116,16 @@ def compute(
     portfolio_total_return = (1 + portfolio_returns).prod() - 1
     portfolio_annualized_return = (1 + portfolio_total_return) ** (1 / n_years) - 1
     portfolio_annualized_vol = portfolio_returns.std() * np.sqrt(252)
-    portfolio_sharpe = (portfolio_annualized_return - risk_free_rate) / portfolio_annualized_vol
+    
+    if portfolio_annualized_vol > 0:
+        portfolio_sharpe = (portfolio_annualized_return - risk_free_rate) / portfolio_annualized_vol
+    else:
+        portfolio_sharpe = 0.0
+        
     portfolio_max_drawdown = portfolio_drawdown.min()
 
     # Correlation matrix
-    correlation_matrix = returns.corr()
+    correlation_matrix = returns.corr().fillna(0)
     corr_dict = {}
     for t1 in tickers:
         corr_dict[t1] = {}

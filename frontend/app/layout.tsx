@@ -24,8 +24,11 @@ import { Providers } from "./providers";
 import { AppLayout } from "@/components/layout/AppLayout";
 
 export const metadata: Metadata = {
-  title: "Multi-Asset Portfolio Risk Dashboard",
-  description: "Quantitative finance web application",
+  title: "RiskMatrix — Multi-Asset Portfolio Risk Dashboard",
+  description: "Institutional-grade multi-asset risk analytics platform",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

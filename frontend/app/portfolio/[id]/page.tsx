@@ -12,7 +12,6 @@ import { ReturnsChart } from "@/components/analytics/ReturnsChart";
 import { CorrelationHeatmap } from "@/components/analytics/CorrelationHeatmap";
 import { SharpeTable } from "@/components/analytics/SharpeTable";
 import { AllocationSummary } from "@/components/allocation/AllocationSummary";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { MOTION } from "@/lib/motion";
 import { MetricCards } from "@/components/analytics/MetricCards";
@@ -105,13 +104,32 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
               <span>{isComputing ? 'Computing...' : 'Refresh'}</span>
             </button>
 
-            {/* Report Link */}
-            <Link href={`/portfolio/${id}/report`}>
-              <button className="h-8 flex items-center gap-1.5 px-3 rounded-md bg-surface border border-default text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-strong transition-colors font-sans text-xs">
-                <FileText size={12} />
-                <span>Report</span>
-              </button>
-            </Link>
+            {/* Export Button */}
+            <button 
+              onClick={async () => {
+                if (!portfolio) return;
+                try {
+                  const { api } = await import("@/lib/api");
+                  const response = await api.get(`/api/portfolios/${portfolio.id}/export-csv?range=${selectedRange}`, {
+                    responseType: 'blob',
+                  });
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `QuantVault_${portfolio.name.replace(/\s+/g, '_')}_Performance.csv`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  window.URL.revokeObjectURL(url);
+                } catch (error) {
+                  console.error("Export failed", error);
+                }
+              }}
+              className="h-8 flex items-center gap-1.5 px-3 rounded-md bg-surface border border-default text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-strong transition-colors font-sans text-xs"
+            >
+              <FileText size={12} />
+              <span>Export</span>
+            </button>
           </div>
         </motion.section>
 
@@ -126,7 +144,7 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
           {/* Cumulative Returns */}
           <motion.div 
             variants={MOTION.chartReveal} 
-            className="col-span-12 lg:col-span-8 bg-surface border border-subtle rounded-lg p-5 flex flex-col justify-between"
+            className="col-span-12 bg-surface border border-subtle rounded-lg p-5 flex flex-col justify-between"
           >
             <div className="flex justify-between items-start mb-4">
               <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase">
@@ -139,7 +157,7 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
                 </div>
               )}
             </div>
-            <div className="w-full h-[320px] relative">
+            <div className="w-full h-[360px] relative">
               <ReturnsChart metrics={metrics} />
             </div>
             <div className="mt-4 grid grid-cols-2 gap-4 pt-4 border-t border-subtle text-xs">
@@ -164,34 +182,6 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
             </div>
           </motion.div>
 
-          {/* Sharpe Table & Risk Stats */}
-          <motion.div variants={MOTION.chartReveal} className="col-span-12 lg:col-span-4 flex flex-col gap-6 justify-between">
-            <div className="flex-1">
-              <SharpeTable snapshot={snapshot} assets={portfolio.assets} />
-            </div>
-            
-            <div className="bg-surface border border-subtle rounded-lg p-5">
-              <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase block mb-3">
-                RISK POSTURE INDEX
-              </span>
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-2xl font-mono font-bold text-[var(--text-primary)]">
-                  {allocation.diversification_score.toFixed(1)}
-                </span>
-                <span className="text-[11px] font-mono text-[var(--text-muted)]">/100</span>
-              </div>
-              <div className="w-full h-1 bg-elevated rounded-none overflow-hidden mb-4">
-                <div 
-                  className="h-full bg-accent transition-all duration-300" 
-                  style={{ width: `${allocation.diversification_score}%` }}
-                />
-              </div>
-              <p className="text-xs text-[var(--text-secondary)] leading-relaxed italic">
-                Top sector concentration: {allocation.top_sector}. Average intra-portfolio asset correlation: {allocation.intra_portfolio_correlation.toFixed(2)}.
-              </p>
-            </div>
-          </motion.div>
-
           {/* Volatility Trend */}
           <motion.div 
             variants={MOTION.chartReveal} 
@@ -200,7 +190,7 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
             <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase mb-4 block">
               30-DAY ROLLING VOLATILITY
             </span>
-            <div className="w-full h-[240px]">
+            <div className="w-full h-[280px]">
               <VolatilityChart metrics={metrics} selectedRange={selectedRange} onRangeChange={setRange} />
             </div>
           </motion.div>
@@ -213,7 +203,7 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
             <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase mb-4 block">
               UNDERWATER DRAWDOWN ANALYSIS
             </span>
-            <div className="w-full h-[240px]">
+            <div className="w-full h-[280px]">
               <DrawdownChart metrics={metrics} />
             </div>
           </motion.div>
@@ -223,8 +213,12 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
             <CorrelationHeatmap matrix={snapshot.correlation_matrix} assets={portfolio.assets} />
           </motion.div>
 
-          {/* Allocation Breakdown panels */}
-          <motion.div variants={MOTION.chartReveal} className="col-span-12">
+          {/* Attribution & Allocation panels */}
+          <motion.div variants={MOTION.chartReveal} className="col-span-12 lg:col-span-5">
+            <SharpeTable snapshot={snapshot} assets={portfolio.assets} />
+          </motion.div>
+
+          <motion.div variants={MOTION.chartReveal} className="col-span-12 lg:col-span-7">
             <AllocationSummary allocation={allocation} assets={portfolio.assets} />
           </motion.div>
 

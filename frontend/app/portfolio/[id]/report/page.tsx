@@ -34,35 +34,27 @@ export default function PortfolioReportPage({ params }: { params: { id: string }
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
-    const element = document.getElementById("report-content");
-    if (!element) return;
+    if (!portfolio) return;
     
     setIsDownloading(true);
-    // Force strict width and PDF export styling
-    const originalWidth = element.style.width;
-    const originalMaxWidth = element.style.maxWidth;
-    element.style.width = "1100px";
-    element.style.maxWidth = "1100px";
-    element.classList.add("pdf-export-active");
-    
     try {
-      const html2pdf = (await import("html2pdf.js")).default;
-      const opt = {
-        margin: 10,
-        filename: `${portfolio?.name || 'Portfolio'}_QuantVault_Report.pdf`,
-        image: { type: 'jpeg' as const, quality: 1 },
-        html2canvas: { scale: 2, useCORS: true, windowWidth: 1100 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] as const }
-      };
+      const { api } = await import("@/lib/api");
+      const response = await api.get(`/api/portfolios/${portfolio.id}/export-csv?range=${selectedRange}`, {
+        responseType: 'blob',
+      });
       
-      await html2pdf().set(opt).from(element).save();
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const filename = `QuantVault_${portfolio.name.replace(/\s+/g, '_')}_Performance.csv`;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("PDF generation failed", error);
+      console.error("CSV export failed", error);
     } finally {
-      element.style.width = originalWidth;
-      element.style.maxWidth = originalMaxWidth;
-      element.classList.remove("pdf-export-active");
       setIsDownloading(false);
     }
   };
@@ -94,7 +86,7 @@ export default function PortfolioReportPage({ params }: { params: { id: string }
         <div className="flex flex-col gap-6">
           <header className="report-section flex items-start justify-between gap-8 border-b border-subtle pb-6">
             <div>
-              <p className="font-sans text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-[0.2em]">QuantVault Institutional Report</p>
+              <p className="font-sans text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-[0.2em]">RiskMatrix Institutional Report</p>
               <h1 className="mt-2 font-serif italic text-3xl text-[var(--text-primary)]">{portfolio.name}</h1>
               <p className="mt-2 text-xs text-[var(--text-secondary)]">Generated {generatedAt} &bull; Snapshot {snapshot.date || "not computed"}</p>
             </div>
@@ -110,7 +102,7 @@ export default function PortfolioReportPage({ params }: { params: { id: string }
                 className="print:hidden h-10 flex items-center gap-1.5 px-5 bg-accent hover:bg-[#3b7de8] text-white font-sans text-[13px] font-medium rounded-[6px] transition-all disabled:opacity-50"
               >
                 {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download size={14} />}
-                <span>{isDownloading ? "Generating..." : "Download Report"}</span>
+                <span>{isDownloading ? "Exporting..." : "Export CSV"}</span>
               </button>
             </div>
           </header>
@@ -154,7 +146,7 @@ export default function PortfolioReportPage({ params }: { params: { id: string }
         {/* PAGE 2: Risk Trends & Asset Allocation */}
         <div className="flex flex-col gap-6 mt-10 pdf-export-active:mt-0 pdf-export-active:pt-4">
           <div className="pdf-export-only justify-between items-center border-b border-subtle pb-2 text-[var(--text-muted)] font-sans text-[9px] uppercase tracking-widest">
-            <span>QuantVault Institutional Report &bull; {portfolio.name}</span>
+            <span>RiskMatrix Institutional Report &bull; {portfolio.name}</span>
             <span>Page 2</span>
           </div>
 
@@ -184,7 +176,7 @@ export default function PortfolioReportPage({ params }: { params: { id: string }
         {/* PAGE 3: Sharpe Table & Correlation Heatmap */}
         <div className="flex flex-col gap-6 mt-10 pdf-export-active:mt-0 pdf-export-active:pt-4">
           <div className="pdf-export-only justify-between items-center border-b border-subtle pb-2 text-[var(--text-muted)] font-sans text-[9px] uppercase tracking-widest">
-            <span>QuantVault Institutional Report &bull; {portfolio.name}</span>
+            <span>RiskMatrix Institutional Report &bull; {portfolio.name}</span>
             <span>Page 3</span>
           </div>
 

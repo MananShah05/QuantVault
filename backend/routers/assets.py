@@ -22,7 +22,7 @@ async def search_assets(
     Requires authentication.
     """
     try:
-        results = search_tickers(q.strip())
+        results = await search_tickers(q.strip())
         return [AssetSearchResult(**res) for res in results]
     except ValueError as e:
         raise HTTPException(

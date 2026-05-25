@@ -8,6 +8,7 @@ Validates the Bearer token from the Authorization header using:
 
 import os
 import logging
+from pathlib import Path
 import httpx
 
 from fastapi import Depends, HTTPException, status
@@ -15,7 +16,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[1].joinpath(".env"))
 
 logger = logging.getLogger(__name__)
 

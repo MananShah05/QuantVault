@@ -196,7 +196,7 @@ export default function SettingsPage() {
     setTheme("dark");
     toast({
       title: "Settings reset",
-      description: "Preferences are back to the QuantVault defaults.",
+      description: "Preferences are back to the RiskMatrix defaults.",
     });
   };
 
@@ -437,7 +437,7 @@ export default function SettingsPage() {
           <div>
             <h2 className="text-base font-semibold text-foreground">Workspace Defaults</h2>
             <p className="mt-1 text-xs text-text-secondary">
-              Local preferences for how QuantVault should open and refresh on this device.
+              Local preferences for how RiskMatrix should open and refresh on this device.
             </p>
           </div>
           <div className="flex gap-2">

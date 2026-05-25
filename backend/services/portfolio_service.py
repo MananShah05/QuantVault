@@ -62,7 +62,7 @@ async def compute_and_store(
         logger.info(f"Computing metrics for portfolio '{portfolio.name}': {tickers}")
 
         # 4. Fetch price data
-        prices = market_data.fetch_prices(tickers, period=period)
+        prices = await market_data.fetch_prices(tickers, period=period)
 
         # 5. Compute all metrics
         result_data = metrics_engine.compute(prices, weights, risk_free_rate)
@@ -73,7 +73,7 @@ async def compute_and_store(
 
         if not portfolio_daily_df.empty:
             benchmark_ticker = determine_benchmark(tickers)
-            portfolio_daily_df = compute_benchmark_metrics(
+            portfolio_daily_df = await compute_benchmark_metrics(
                 portfolio_daily=portfolio_daily_df,
                 benchmark_ticker=benchmark_ticker,
                 start_date=portfolio_daily_df["date"].min(),

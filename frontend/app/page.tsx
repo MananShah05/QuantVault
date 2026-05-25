@@ -82,7 +82,7 @@ export default function LandingPage() {
     await new Promise((resolve) => setTimeout(resolve, 400));
     toast({
       title: "Welcome back",
-      description: "Your QuantVault session is ready.",
+      description: "Your RiskMatrix session is ready.",
     });
     setIsAuthOpen(false);
     router.push("/dashboard");
@@ -105,7 +105,7 @@ export default function LandingPage() {
         <DialogContent className="bg-surface border-default max-w-[400px] rounded-lg p-8 select-none">
           <DialogHeader className="hidden">
             <DialogTitle>Authentication Gate</DialogTitle>
-            <DialogDescription>Secure gateway to QuantVault Risk Suite</DialogDescription>
+            <DialogDescription>Secure gateway to RiskMatrix Risk Suite</DialogDescription>
           </DialogHeader>
 
           <div className="w-full text-center space-y-6 pt-2">
@@ -121,7 +121,7 @@ export default function LandingPage() {
                 >
                   {/* Monogram */}
                   <div className="text-accent font-mono text-[11px] tracking-[0.4em] uppercase">
-                    Q V
+                    R M
                   </div>
 
                   {/* Heading */}
@@ -217,7 +217,7 @@ export default function LandingPage() {
                       </p>
                     ) : (
                       <p>
-                        New to QuantVault?{" "}
+                        New to RiskMatrix?{" "}
                         <button
                           onClick={() => {
                             setIsSignUp(true);
@@ -264,7 +264,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="w-full max-w-5xl mx-auto px-6 py-8 border-t border-subtle text-center text-[11px] text-muted-foreground/50 flex flex-col sm:flex-row justify-between gap-4 select-none">
-        <p>© 2026 QuantVault Inc. All rights reserved.</p>
+        <p>© 2026 RiskMatrix Inc. All rights reserved.</p>
         <div className="flex justify-center gap-6">
           <a href="#" className="hover:text-foreground transition-colors">Risk Disclosures</a>
           <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>

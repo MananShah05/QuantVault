@@ -16,7 +16,7 @@ export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [userInitials, setUserInitials] = useState("QV");
+  const [userInitials, setUserInitials] = useState("RM");
   
   const pathname = usePathname();
   const params = useParams();
@@ -45,7 +45,7 @@ export function Navbar() {
       if (!mounted || !data.user) return;
 
       const metadata = data.user.user_metadata || {};
-      const displayName = String(metadata.fullName || metadata.name || data.user.email || "QuantVault");
+      const displayName = String(metadata.fullName || metadata.name || data.user.email || "RiskMatrix");
       const initials = displayName
         .split(/[\s@.]+/)
         .filter(Boolean)
@@ -53,7 +53,7 @@ export function Navbar() {
         .map((part) => part[0]?.toUpperCase())
         .join("");
 
-      setUserInitials(initials || "QV");
+      setUserInitials(initials || "RM");
     });
 
     return () => {

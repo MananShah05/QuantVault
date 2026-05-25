@@ -9,12 +9,13 @@ FastAPI application entry point.
 import os
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().with_name(".env"))
 
 from database import Base, engine
 from routers import portfolios, assets, metrics, allocation, export
@@ -40,6 +41,8 @@ async def lifespan(app: FastAPI):
         logger.info("Verifying and extending database schema...")
         await conn.execute(text("ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS user_id VARCHAR(100);"))
         await conn.execute(text("ALTER TABLE portfolio_assets ADD COLUMN IF NOT EXISTS sector VARCHAR(50);"))
+        await conn.execute(text("ALTER TABLE daily_metrics ADD COLUMN IF NOT EXISTS computed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;"))
+        await conn.execute(text("ALTER TABLE portfolio_snapshots ADD COLUMN IF NOT EXISTS computed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;"))
         await conn.execute(text("ALTER TABLE portfolio_snapshots ADD COLUMN IF NOT EXISTS benchmark_return NUMERIC(10, 6);"))
         await conn.execute(text("ALTER TABLE portfolio_snapshots ADD COLUMN IF NOT EXISTS benchmark_cumulative_return NUMERIC(10, 6);"))
         
@@ -55,12 +58,21 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+cors_origins_env = os.getenv("CORS_ORIGINS", "")
+cors_origins = [
+    origin.strip()
+    for origin in cors_origins_env.split(",")
+    if origin.strip()
+]
+if not cors_origins:
+    cors_origins = [
         "http://localhost:3000",
         "https://quant-vault-1.vercel.app",
-    ],
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

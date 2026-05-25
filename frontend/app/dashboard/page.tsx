@@ -153,11 +153,16 @@ export default function DashboardPage() {
         className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4"
       >
         <motion.div variants={MOTION.itemUp}>
-          <h1 className="font-serif italic text-[32px] text-[var(--text-primary)]">Good morning.</h1>
+          <h1 className="font-serif italic text-[32px] text-[var(--text-primary)]">{(() => {
+            const hour = new Date().getHours();
+            if (hour < 12) return "Good morning.";
+            if (hour < 17) return "Good afternoon.";
+            return "Good evening.";
+          })()}</h1>
           <div className="flex items-center gap-2 mt-1">
             <span className="font-mono text-xs text-[var(--text-muted)]">{formattedDate}</span>
             <span className="text-[var(--text-muted)]">•</span>
-            <span className="font-mono text-xs text-[var(--text-muted)]">{portfolios.length} active vaults</span>
+            <span className="font-mono text-xs text-[var(--text-muted)]">{portfolios.length} active portfolios</span>
           </div>
         </motion.div>
         

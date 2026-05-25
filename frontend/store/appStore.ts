@@ -53,7 +53,7 @@ export const useAppStore = create<AppState>()(
       resetPreferences: () => set({ preferences: defaultPreferences }),
     }),
     {
-      name: "quantvault-app-settings",
+      name: "riskmatrix-app-settings",
     }
   )
 );

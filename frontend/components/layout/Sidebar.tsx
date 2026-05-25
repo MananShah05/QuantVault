@@ -56,7 +56,7 @@ export function Sidebar() {
                   transition={{ duration: 0.15 }}
                   className="font-sans font-bold text-[13px] tracking-[0.2em] text-[var(--text-primary)] whitespace-nowrap"
                 >
-                  QUANTVAULT
+                  RISKMATRIX
                 </motion.span>
               )}
             </AnimatePresence>

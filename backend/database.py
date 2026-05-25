@@ -3,12 +3,14 @@ Async SQLAlchemy database configuration for Supabase PostgreSQL.
 Uses asyncpg driver with connection pooling.
 """
 
+import os
+from pathlib import Path
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
-import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().with_name(".env"))
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 

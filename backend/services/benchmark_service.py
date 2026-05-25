@@ -2,6 +2,7 @@
 Benchmark service — fetches and computes returns for comparison benchmarks (SPY or NIFTYBEES.NS).
 """
 
+import asyncio
 from datetime import date, timedelta
 import logging
 
@@ -18,9 +19,10 @@ def determine_benchmark(tickers: list[str]) -> str:
     is_indian = any(t.endswith(".NS") or t.endswith(".BO") for t in tickers)
     return "NIFTYBEES.NS" if is_indian else "SPY"
 
-def fetch_benchmark_returns(benchmark_ticker: str, start_date: date, end_date: date) -> pd.Series:
+async def fetch_benchmark_returns(benchmark_ticker: str, start_date: date, end_date: date) -> pd.Series:
     """
     Download benchmark prices from yfinance and return daily percent returns.
+    Wrapped in asyncio.to_thread to avoid blocking.
     """
     logger.info(f"Fetching benchmark '{benchmark_ticker}' from {start_date} to {end_date}")
     
@@ -29,7 +31,11 @@ def fetch_benchmark_returns(benchmark_ticker: str, start_date: date, end_date: d
     padded_end = end_date + timedelta(days=5)
     
     try:
-        data = yf.download(benchmark_ticker, start=padded_start, end=padded_end, auto_adjust=True, progress=False)
+        def _download():
+            return yf.download(benchmark_ticker, start=padded_start, end=padded_end, auto_adjust=True, progress=False)
+            
+        data = await asyncio.to_thread(_download)
+        
         if data.empty:
             logger.warning(f"No price data found for benchmark {benchmark_ticker}")
             return pd.Series(dtype=float)
@@ -51,7 +57,7 @@ def fetch_benchmark_returns(benchmark_ticker: str, start_date: date, end_date: d
         logger.error(f"Failed to fetch benchmark returns: {e}")
         return pd.Series(dtype=float)
 
-def compute_benchmark_metrics(
+async def compute_benchmark_metrics(
     portfolio_daily: pd.DataFrame, 
     benchmark_ticker: str, 
     start_date: date, 
@@ -59,17 +65,8 @@ def compute_benchmark_metrics(
 ) -> pd.DataFrame:
     """
     Compute benchmark cumulative return, relative alpha, and tracking difference.
-    
-    Args:
-        portfolio_daily: DataFrame containing at least ['date', 'cumulative_return', 'portfolio_return']
-        benchmark_ticker: SPY or NIFTYBEES.NS
-        start_date: first date of daily metrics
-        end_date: last date of daily metrics
-        
-    Returns:
-        DataFrame aligned with portfolio_daily, adding benchmark metrics
     """
-    bench_returns = fetch_benchmark_returns(benchmark_ticker, start_date, end_date)
+    bench_returns = await fetch_benchmark_returns(benchmark_ticker, start_date, end_date)
     
     # Align dates with the portfolio's dates
     aligned_returns = []

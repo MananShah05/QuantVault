@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Loader2, Info, ChevronUp, ChevronDown } from "lucide-react";
+import { Loader2, Info, ChevronUp, ChevronDown, Download } from "lucide-react";
 
 import { usePortfolios } from "@/hooks/usePortfolio";
 import { useAllSnapshots } from "@/hooks/useAnalytics";
@@ -336,8 +336,34 @@ export default function AnalyticsComparePage() {
           <h1 className="font-serif italic text-3xl text-foreground">Analytics</h1>
           <p className="text-sm text-text-secondary mt-1">Return efficiency · Risk-adjusted performance · Attribution</p>
         </div>
-        <div className="font-mono text-xs text-[var(--text-muted)] uppercase tracking-wider">
-          {readyPortfolios.length} Portfolios Analyzed
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={async () => {
+              try {
+                const { api } = await import("@/lib/api");
+                const response = await api.get("/api/portfolios/export-all-csv", {
+                  responseType: 'blob',
+                });
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `QuantVault_Analytics_Summary.csv`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+              } catch (error) {
+                console.error("Export all failed", error);
+              }
+            }}
+            className="h-8 flex items-center gap-1.5 px-3 rounded-md bg-surface border border-default text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-strong transition-colors font-sans text-xs"
+          >
+            <Download size={12} />
+            <span>Export CSV</span>
+          </button>
+          <div className="font-mono text-xs text-[var(--text-muted)] uppercase tracking-wider">
+            {readyPortfolios.length} Portfolios Analyzed
+          </div>
         </div>
       </div>
 
@@ -563,7 +589,7 @@ export default function AnalyticsComparePage() {
                   labelStyle={CHART_THEME.tooltip.labelStyle}
                 />
 
-                {/* Risk-free reference line */}
+                {/* risk-free reference line */}
                 <ReferenceLine
                   x={0.065}
                   stroke="rgba(251,191,36,0.3)"

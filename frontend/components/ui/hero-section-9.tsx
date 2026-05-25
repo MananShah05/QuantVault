@@ -14,6 +14,20 @@ const menuItems = [
     { name: 'About', href: '#' },
 ]
 
+/* ── Tech Stack Items with CDN logos ────────────────── */
+
+const techStack = [
+    { name: "Next.js", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg", invert: true },
+    { name: "React", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg", invert: false },
+    { name: "TypeScript", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg", invert: false },
+    { name: "Tailwind CSS", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg", invert: false },
+    { name: "Python", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg", invert: false },
+    { name: "FastAPI", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg", invert: false },
+    { name: "Supabase", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/supabase/supabase-original.svg", invert: false },
+    { name: "Framer Motion", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/framermotion/framermotion-original.svg", invert: true },
+    { name: "PostgreSQL", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg", invert: false },
+]
+
 export const HeroSection = ({ onLoginClick }: { onLoginClick: () => void }) => {
     const [menuState, setMenuState] = React.useState(false)
     const { theme, setTheme } = useTheme()
@@ -37,7 +51,7 @@ export const HeroSection = ({ onLoginClick }: { onLoginClick: () => void }) => {
                                     aria-label="home"
                                     className="flex items-center gap-3">
                                     <div className="w-2.5 h-2.5 bg-accent" />
-                                    <span className="font-sans font-bold text-[13px] tracking-[0.2em] text-foreground">QUANTVAULT</span>
+                                    <span className="font-sans font-bold text-[13px] tracking-[0.2em] text-foreground">RISKMATRIX</span>
                                 </Link>
 
                                 <button
@@ -109,11 +123,11 @@ export const HeroSection = ({ onLoginClick }: { onLoginClick: () => void }) => {
                 </div>
 
                 <section className="overflow-hidden bg-transparent">
-                    <div className="relative mx-auto max-w-5xl px-6 py-24 lg:py-20">
+                    <div className="relative mx-auto max-w-5xl px-6 py-28 lg:py-24">
                         <div className="relative z-10 mx-auto max-w-3xl text-center space-y-6">
                             <span className="font-mono text-[10px] text-accent tracking-[0.3em] uppercase block">
-                                QUANTVAULT GLOBAL RISK SUITE
-                              </span>
+                                RISKMATRIX GLOBAL RISK SUITE
+                            </span>
                             <h1 className="text-balance text-4xl font-serif italic md:text-5xl lg:text-6xl text-foreground leading-[1.1]">
                               Multi-Asset Portfolio <br />
                               <span className="text-accent">Risk Analytics Reimagined</span>
@@ -133,109 +147,35 @@ export const HeroSection = ({ onLoginClick }: { onLoginClick: () => void }) => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Image Cards projection */}
-                    <div className="mx-auto -mt-16 max-w-7xl [mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)] select-none pointer-events-none opacity-80">
-                        <div className="[perspective:1200px] [mask-image:linear-gradient(to_right,black_60%,transparent_100%)] -mr-16 pl-16 lg:-mr-56 lg:pl-56">
-                            <div className="[transform:rotateX(15deg);]">
-                                <div className="lg:h-[36rem] relative skew-x-[.2rad]">
-                                    <img
-                                        className="rounded-lg z-[2] relative border border-default dark:hidden"
-                                        src="https://tailark.com/_next/image?url=%2Fcard.png&w=3840&q=75"
-                                        alt="QuantVault Analytics terminal projection"
-                                        width={2880}
-                                        height={2074}
-                                    />
-                                    <img
-                                        className="rounded-lg z-[2] relative border border-default hidden dark:block"
-                                        src="https://tailark.com/_next/image?url=%2Fdark-card.webp&w=3840&q=75"
-                                        alt="QuantVault Analytics terminal projection"
-                                        width={2880}
-                                        height={2074}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </section>
                 
-                {/* Partners Logo bar */}
-                <section id="features" className="bg-transparent relative z-10 py-12 border-t border-subtle">
+                {/* Tech Stack Section */}
+                <section id="features" className="bg-transparent relative z-10 py-16 border-t border-subtle">
                     <div className="m-auto max-w-5xl px-6">
                         <h2 className="text-center font-sans text-[11px] font-medium tracking-[0.15em] text-muted-foreground/60 uppercase">
-                          CONNECTED INSTITUTIONAL PARTNERS
+                          BUILT WITH
                         </h2>
-                        <div className="mx-auto mt-12 flex max-w-4xl flex-wrap items-center justify-center gap-x-12 gap-y-8 opacity-45 grayscale hover:opacity-75 transition-opacity">
-                            <img
-                                className="h-4 w-fit dark:invert"
-                                src="https://html.tailus.io/blocks/customers/nvidia.svg"
-                                alt="Nvidia Logo"
-                                height="16"
-                                width="auto"
-                            />
-                            <img
-                                className="h-3 w-fit dark:invert"
-                                src="https://html.tailus.io/blocks/customers/column.svg"
-                                alt="Column Logo"
-                                height="12"
-                                width="auto"
-                            />
-                            <img
-                                className="h-3.5 w-fit dark:invert"
-                                src="https://html.tailus.io/blocks/customers/github.svg"
-                                alt="GitHub Logo"
-                                height="14"
-                                width="auto"
-                            />
-                            <img
-                                className="h-4 w-fit dark:invert"
-                                src="https://html.tailus.io/blocks/customers/nike.svg"
-                                alt="Nike Logo"
-                                height="16"
-                                width="auto"
-                            />
-                            <img
-                                className="h-3.5 w-fit dark:invert"
-                                src="https://html.tailus.io/blocks/customers/laravel.svg"
-                                alt="Laravel Logo"
-                                height="14"
-                                width="auto"
-                            />
-                            <img
-                                className="h-5 w-fit dark:invert"
-                                src="https://html.tailus.io/blocks/customers/lilly.svg"
-                                alt="Lilly Logo"
-                                height="20"
-                                width="auto"
-                            />
-                            <img
-                                className="h-4 w-fit dark:invert"
-                                src="https://html.tailus.io/blocks/customers/lemonsqueezy.svg"
-                                alt="Lemon Squeezy Logo"
-                                height="16"
-                                width="auto"
-                            />
-                            <img
-                                className="h-4 w-fit dark:invert"
-                                src="https://html.tailus.io/blocks/customers/openai.svg"
-                                alt="OpenAI Logo"
-                                height="16"
-                                width="auto"
-                            />
-                            <img
-                                className="h-3.5 w-fit dark:invert"
-                                src="https://html.tailus.io/blocks/customers/tailwindcss.svg"
-                                alt="Tailwind CSS Logo"
-                                height="14"
-                                width="auto"
-                            />
-                            <img
-                                className="h-4 w-fit dark:invert"
-                                src="https://html.tailus.io/blocks/customers/vercel.svg"
-                                alt="Vercel Logo"
-                                height="16"
-                                width="auto"
-                            />
+                        <div className="mx-auto mt-12 flex max-w-4xl flex-wrap items-center justify-center gap-x-10 gap-y-8">
+                            {techStack.map(({ name, logo, invert }) => (
+                                <div key={name} className="flex flex-col items-center gap-2.5 group transition-all duration-200">
+                                    <div className="rounded-xl border border-subtle bg-surface/60 p-3.5 shadow-sm group-hover:border-accent/30 group-hover:shadow-accent/5 group-hover:shadow-md transition-all duration-200 group-hover:scale-110">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={logo}
+                                            alt={`${name} logo`}
+                                            className={cn(
+                                                "w-7 h-7 object-contain transition-all duration-200 opacity-70 group-hover:opacity-100",
+                                                invert && "dark:invert"
+                                            )}
+                                            width={28}
+                                            height={28}
+                                        />
+                                    </div>
+                                    <span className="font-mono text-[10px] text-muted-foreground/70 group-hover:text-foreground transition-colors tracking-wide">
+                                        {name}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </section>

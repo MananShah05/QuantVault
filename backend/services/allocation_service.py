@@ -3,13 +3,14 @@ Allocation service — computes total exposure, average correlation, sector conc
 """
 
 import logging
-import yfinance as yf
+import asyncio
 from uuid import UUID
 from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 import numpy as np
+import yfinance as yf
 
 from models import Portfolio, PortfolioAsset, PortfolioSnapshot
 
@@ -52,8 +53,12 @@ async def get_allocation_summary(portfolio_id: UUID, db: AsyncSession, user_id: 
         if not sec:
             try:
                 logger.info(f"Sector missing for {asset.ticker}. Fetching from yfinance...")
-                t = yf.Ticker(asset.ticker)
-                info = t.info
+                
+                def _fetch_info():
+                    t = yf.Ticker(asset.ticker)
+                    return t.info
+                
+                info = await asyncio.to_thread(_fetch_info)
                 sec = info.get("sector")
                 
                 # Fallback if sector is not provided by yfinance (e.g. for ETFs, Gold, Crypto)

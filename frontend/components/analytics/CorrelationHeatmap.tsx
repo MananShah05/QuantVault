@@ -20,38 +20,44 @@ export function CorrelationHeatmap({ matrix, assets }: Props) {
 
   const tickers = assets.map(a => a.ticker);
 
-  const getStyle = (value: number, rowTicker: string, colTicker: string) => {
-    if (rowTicker === colTicker) {
-      return { 
-        backgroundColor: 'var(--bg-elevated)', 
+  // Filter tickers to only those present in the matrix keys
+  const validTickers = tickers.filter(t => t in matrix);
+
+  if (validTickers.length === 0) {
+    return (
+      <div className="bg-surface border border-subtle rounded-lg p-6 text-center select-none font-sans">
+        <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase block mb-4 text-left">
+          CROSS-ASSET CORRELATION MATRIX
+        </span>
+        <p className="text-xs text-[var(--text-muted)] py-8">No correlation data found for the current assets.</p>
+      </div>
+    );
+  }
+
+  const getCellColor = (value: number, isDiagonal: boolean) => {
+    if (isDiagonal) {
+      return {
+        backgroundColor: 'var(--bg-elevated)',
         color: 'var(--text-muted)',
-        fontFamily: 'IBM Plex Mono',
-        fontSize: '13px'
       };
     }
     const absVal = Math.abs(value);
-    // Opacity mapped: Math.abs(correlation) * 0.6 — never full saturation
-    const opacity = absVal * 0.6;
+    const opacity = Math.max(absVal * 0.65, 0.05);
     if (value > 0) {
-      // Accent blue scale (rgba(79, 142, 247, opacity))
-      return { 
-        backgroundColor: `rgba(79, 142, 247, ${opacity})`, 
-        color: 'var(--text-primary)',
-        fontFamily: 'IBM Plex Mono',
-        fontSize: '13px',
-        fontWeight: 500
+      return {
+        backgroundColor: `rgba(79, 142, 247, ${opacity})`,
+        color: absVal > 0.4 ? '#ffffff' : 'var(--text-primary)',
       };
     } else {
-      // Negative red scale (rgba(248, 113, 113, opacity))
-      return { 
-        backgroundColor: `rgba(248, 113, 113, ${opacity})`, 
-        color: 'var(--text-primary)',
-        fontFamily: 'IBM Plex Mono',
-        fontSize: '13px',
-        fontWeight: 500
+      return {
+        backgroundColor: `rgba(248, 113, 113, ${opacity})`,
+        color: absVal > 0.4 ? '#ffffff' : 'var(--text-primary)',
       };
     }
   };
+
+  // Use a fixed cell size for a properly sized grid
+  const cellSize = "80px";
 
   return (
     <div className="bg-surface border border-subtle rounded-lg p-5 select-none w-full">
@@ -59,45 +65,76 @@ export function CorrelationHeatmap({ matrix, assets }: Props) {
         CROSS-ASSET CORRELATION MATRIX
       </span>
       <div className="overflow-x-auto w-full pt-2">
-        <div className="min-w-max border border-subtle rounded-md overflow-hidden bg-base">
-          <table className="w-full border-collapse table-fixed">
-            <thead>
-              <tr className="border-b border-subtle">
-                <th className="bg-surface p-3 border-r border-subtle w-24"></th>
-                {tickers.map(t => (
-                  <th 
-                    key={t} 
-                    className="bg-surface px-3 py-2.5 font-mono text-[11px] text-[var(--text-muted)] text-center w-24"
-                  >
-                    {t}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {tickers.map((rowTicker) => (
-                <tr key={rowTicker} className="border-b border-subtle last:border-b-0">
-                  <th 
-                    className="bg-surface px-3 py-2.5 font-mono text-[11px] text-[var(--text-muted)] text-left border-r border-subtle"
-                  >
-                    {rowTicker}
-                  </th>
-                  {tickers.map((colTicker) => {
-                    const val = matrix[rowTicker]?.[colTicker] ?? 0;
-                    return (
-                      <td 
-                        key={colTicker} 
-                        className="h-14 p-2 text-center"
-                        style={getStyle(val, rowTicker, colTicker)}
-                      >
-                        {val.toFixed(2)}
-                      </td>
-                    );
-                  })}
-                </tr>
+        <table
+          className="border-collapse"
+          style={{ width: 'auto' }}
+        >
+          <thead>
+            <tr>
+              {/* Empty corner cell */}
+              <th
+                className="bg-surface border-b border-r border-subtle"
+                style={{ width: cellSize, minWidth: cellSize }}
+              />
+              {validTickers.map(t => (
+                <th
+                  key={t}
+                  className="bg-surface border-b border-subtle font-mono text-[11px] text-[var(--text-muted)] text-center font-medium"
+                  style={{ width: cellSize, minWidth: cellSize, padding: '10px 8px' }}
+                >
+                  {t}
+                </th>
               ))}
-            </tbody>
-          </table>
+            </tr>
+          </thead>
+          <tbody>
+            {validTickers.map((rowTicker) => (
+              <tr key={rowTicker}>
+                <th
+                  className="bg-surface font-mono text-[11px] text-[var(--text-muted)] text-left font-medium border-r border-b border-subtle"
+                  style={{ width: cellSize, minWidth: cellSize, padding: '10px 12px' }}
+                >
+                  {rowTicker}
+                </th>
+                {validTickers.map((colTicker) => {
+                  const isDiagonal = rowTicker === colTicker;
+                  const val = matrix[rowTicker]?.[colTicker] ?? 0;
+                  const colors = getCellColor(val, isDiagonal);
+                  return (
+                    <td
+                      key={colTicker}
+                      className="text-center font-mono text-[13px] font-medium border-b border-subtle transition-colors"
+                      style={{
+                        width: cellSize,
+                        minWidth: cellSize,
+                        height: '56px',
+                        padding: '8px',
+                        ...colors,
+                      }}
+                    >
+                      {val.toFixed(2)}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-end gap-4 mt-4 pt-3 border-t border-subtle">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'rgba(248, 113, 113, 0.5)' }} />
+          <span className="font-mono text-[10px] text-[var(--text-muted)]">Negative</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm bg-elevated border border-subtle" />
+          <span className="font-mono text-[10px] text-[var(--text-muted)]">Diagonal</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'rgba(79, 142, 247, 0.5)' }} />
+          <span className="font-mono text-[10px] text-[var(--text-muted)]">Positive</span>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 Market data service — fetches price data and validates tickers via yfinance.
 """
 
+import asyncio
 import yfinance as yf
 import pandas as pd
 import logging
@@ -22,34 +23,29 @@ QUOTE_TYPE_MAP = {
 }
 
 
-def fetch_prices(tickers: list[str], period: str = "2y") -> pd.DataFrame:
+async def fetch_prices(tickers: list[str], period: str = "2y") -> pd.DataFrame:
     """
     Download adjusted close prices for multiple tickers from Yahoo Finance.
-
-    Args:
-        tickers: List of yfinance ticker symbols (e.g. ["AAPL", "GLD"])
-        period: How far back to fetch (e.g. "2y", "1y", "6mo")
-
-    Returns:
-        DataFrame with DatetimeIndex, one column per ticker, values = adjusted close
-
-    Raises:
-        ValueError: If any ticker returns empty data
+    Wrapped in asyncio.to_thread to avoid blocking the event loop.
     """
     logger.info(f"Fetching prices for {tickers} over period={period}")
 
-    if len(tickers) == 1:
-        # yfinance returns a Series for single tickers, handle differently
-        data = yf.download(tickers[0], period=period, auto_adjust=True, progress=False)
-        if data.empty:
+    def _download():
+        if len(tickers) == 1:
+            return yf.download(tickers[0], period=period, auto_adjust=True, progress=False)
+        return yf.download(tickers, period=period, auto_adjust=True, progress=False)
+
+    data = await asyncio.to_thread(_download)
+
+    if data.empty:
+        if len(tickers) == 1:
             raise ValueError(f"Ticker '{tickers[0]}' returned no data from yfinance")
+        raise ValueError(f"No data returned for tickers: {tickers}")
+
+    if len(tickers) == 1:
         prices = data[["Close"]].copy()
         prices.columns = [tickers[0]]
     else:
-        data = yf.download(tickers, period=period, auto_adjust=True, progress=False)
-        if data.empty:
-            raise ValueError(f"No data returned for tickers: {tickers}")
-
         # yfinance returns MultiIndex columns (metric, ticker) for multiple tickers
         if isinstance(data.columns, pd.MultiIndex):
             prices = data["Close"].copy()
@@ -71,17 +67,17 @@ def fetch_prices(tickers: list[str], period: str = "2y") -> pd.DataFrame:
     return prices
 
 
-def search_tickers(query: str) -> list[dict]:
+async def search_tickers(query: str) -> list[dict]:
     """
     Search for ticker symbols using Finnhub.
     """
     api_key = os.getenv("FINNHUB_API_KEY", "d8908npr01qs9ff6fn0gd8908npr01qs9ff6fn10")
     try:
-        response = httpx.get(
-            "https://finnhub.io/api/v1/search",
-            params={"q": query, "token": api_key},
-            timeout=5.0
-        )
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                "https://finnhub.io/api/v1/search",
+                params={"q": query, "token": api_key},
+            )
         response.raise_for_status()
         data = response.json()
         
