@@ -1,5 +1,6 @@
 # Markdown files
 *.md
+!README.md
 
 # Stitch utility
 download_stitch.py
@@ -11,4 +12,3 @@ __pycache__/
 
 
 .vscode/
-.claude/
