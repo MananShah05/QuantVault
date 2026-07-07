@@ -85,7 +85,7 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
                   onClick={() => setRange(range)}
                   className={`h-7 px-3 font-mono text-[11px] rounded transition-colors ${
                     selectedRange === range 
-                      ? 'text-[#4f8ef7] bg-[#4f8ef7]/12 font-semibold' 
+                      ? 'text-accent bg-[var(--accent-dim)] font-semibold' 
                       : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                 >
@@ -144,7 +144,7 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
           {/* Cumulative Returns */}
           <motion.div 
             variants={MOTION.chartReveal} 
-            className="col-span-12 bg-surface border border-subtle rounded-lg p-5 flex flex-col justify-between"
+            className="col-span-12 bg-surface border border-subtle elev-1 rounded-lg p-5 flex flex-col justify-between"
           >
             <div className="flex justify-between items-start mb-4">
               <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase">
@@ -185,7 +185,7 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
           {/* Volatility Trend */}
           <motion.div 
             variants={MOTION.chartReveal} 
-            className="col-span-12 lg:col-span-6 bg-surface border border-subtle rounded-lg p-5 flex flex-col"
+            className="col-span-12 lg:col-span-6 bg-surface border border-subtle elev-1 rounded-lg p-5 flex flex-col"
           >
             <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase mb-4 block">
               30-DAY ROLLING VOLATILITY
@@ -198,7 +198,7 @@ export default function AnalyticsDashboard({ params }: { params: { id: string } 
           {/* Drawdown Profile */}
           <motion.div 
             variants={MOTION.chartReveal} 
-            className="col-span-12 lg:col-span-6 bg-surface border border-subtle rounded-lg p-5 flex flex-col"
+            className="col-span-12 lg:col-span-6 bg-surface border border-subtle elev-1 rounded-lg p-5 flex flex-col"
           >
             <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase mb-4 block">
               UNDERWATER DRAWDOWN ANALYSIS

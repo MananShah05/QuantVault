@@ -32,7 +32,7 @@ export function PortfolioList() {
           </p>
           <div className="pt-2">
             <Link href="/portfolio/new">
-              <button className="h-9 bg-accent hover:bg-[#3b7de8] text-white font-sans text-xs font-medium px-4 rounded-[6px] transition-all inline-flex items-center gap-1.5">
+              <button className="h-9 bg-accent hover:bg-accent-hover text-[var(--accent-foreground)] font-sans text-xs font-medium px-4 rounded-[6px] transition-all inline-flex items-center gap-1.5">
                 <Plus size={14} /> New Portfolio
               </button>
             </Link>

@@ -99,7 +99,7 @@ export default function PortfolioReportPage({ params }: { params: { id: string }
                 onClick={handleDownload}
                 disabled={isDownloading}
                 data-html2canvas-ignore="true"
-                className="print:hidden h-10 flex items-center gap-1.5 px-5 bg-accent hover:bg-[#3b7de8] text-white font-sans text-[13px] font-medium rounded-[6px] transition-all disabled:opacity-50"
+                className="print:hidden h-10 flex items-center gap-1.5 px-5 bg-accent hover:bg-accent-hover text-[var(--accent-foreground)] font-sans text-[13px] font-medium rounded-[6px] transition-all disabled:opacity-50"
               >
                 {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download size={14} />}
                 <span>{isDownloading ? "Exporting..." : "Export CSV"}</span>

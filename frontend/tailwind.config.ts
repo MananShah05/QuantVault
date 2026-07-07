@@ -25,6 +25,7 @@ const config = {
         accent: {
           DEFAULT: 'var(--accent)',
           foreground: "var(--accent-foreground)",
+          hover: "var(--accent-hover)",
         },
         primary: {
           DEFAULT: "var(--primary)",
@@ -98,6 +99,13 @@ const config = {
       },
       animation: {
         shimmer: 'shimmer 1.6s ease-in-out infinite',
+      },
+      boxShadow: {
+        'inset-top': 'var(--shadow-inset-top)',
+        'elev': 'var(--shadow-elev)',
+      },
+      transitionTimingFunction: {
+        'expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
       keyframes: {
         shimmer: {

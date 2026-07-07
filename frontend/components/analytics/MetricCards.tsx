@@ -4,19 +4,9 @@ import { SnapshotResponse } from "@/types";
 import { motion } from "framer-motion";
 import { TrendingUp, Activity, ShieldAlert, Award } from "lucide-react";
 import { MOTION } from "@/lib/motion";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 export function MetricCards({ snapshot }: { snapshot: SnapshotResponse }) {
-  const handleFormatPct = (val: number | null | undefined) => {
-    if (val === null || val === undefined) return "N/A";
-    const sign = val >= 0 ? "+" : "";
-    return `${sign}${(val * 100).toFixed(2)}%`;
-  };
-
-  const handleFormatVal = (val: number | null | undefined) => {
-    if (val === null || val === undefined) return "N/A";
-    return `${(val * 100).toFixed(2)}%`;
-  };
-
   const getReturnColor = (val: number | null | undefined) => 
     val && val >= 0 ? "text-positive" : "text-negative";
 
@@ -30,10 +20,17 @@ export function MetricCards({ snapshot }: { snapshot: SnapshotResponse }) {
   const volColor = getVolColor(snapshot.portfolio_volatility);
   const sharpeColor = getSharpeColor(snapshot.sharpe_ratio);
 
+  // Signed percent: "+12.34%" / "-4.50%"
+  const fmtSignedPct = (v: number) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(2)}%`;
+  // Unsigned percent: "12.34%"
+  const fmtPct = (v: number) => `${(v * 100).toFixed(2)}%`;
+  const fmtNum = (v: number) => v.toFixed(2);
+
   const cards = [
     { 
       title: "Annualised Return", 
-      value: handleFormatPct(snapshot.annualized_return), 
+      raw: snapshot.annualized_return,
+      formatter: fmtSignedPct,
       colorClass: returnColor,
       borderStyle: snapshot.annualized_return && snapshot.annualized_return >= 0 ? "border-l-positive" : "border-l-negative",
       icon: TrendingUp,
@@ -42,7 +39,8 @@ export function MetricCards({ snapshot }: { snapshot: SnapshotResponse }) {
     },
     { 
       title: "Portfolio Volatility", 
-      value: handleFormatVal(snapshot.portfolio_volatility), 
+      raw: snapshot.portfolio_volatility,
+      formatter: fmtPct,
       colorClass: volColor,
       borderStyle: snapshot.portfolio_volatility && snapshot.portfolio_volatility < 0.15 
         ? "border-l-positive" 
@@ -53,7 +51,8 @@ export function MetricCards({ snapshot }: { snapshot: SnapshotResponse }) {
     },
     { 
       title: "Max Drawdown", 
-      value: handleFormatVal(snapshot.max_drawdown), 
+      raw: snapshot.max_drawdown,
+      formatter: fmtPct,
       colorClass: "text-negative",
       borderStyle: "border-l-negative",
       icon: ShieldAlert,
@@ -62,7 +61,8 @@ export function MetricCards({ snapshot }: { snapshot: SnapshotResponse }) {
     },
     { 
       title: "Sharpe Ratio", 
-      value: snapshot.sharpe_ratio?.toFixed(2) ?? "N/A", 
+      raw: snapshot.sharpe_ratio,
+      formatter: fmtNum,
       colorClass: sharpeColor,
       borderStyle: snapshot.sharpe_ratio && snapshot.sharpe_ratio > 1 
         ? "border-l-positive" 
@@ -82,22 +82,27 @@ export function MetricCards({ snapshot }: { snapshot: SnapshotResponse }) {
     >
       {cards.map((card) => {
         const Icon = card.icon;
+        const hasValue = card.raw !== null && card.raw !== undefined;
         return (
           <motion.div 
             key={card.title} 
             variants={MOTION.itemUp}
-            className={`bg-surface border-t border-r border-b border-subtle border-l-[3px] ${card.borderStyle} p-5 flex flex-col justify-between min-h-[140px]`}
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className={`group bg-surface elev-1 border-t border-r border-b border-subtle border-l-[3px] ${card.borderStyle} p-5 flex flex-col justify-between min-h-[140px] transition-colors hover:border-accent-border`}
           >
             <div className="flex justify-between items-start">
               <span className="font-sans text-[10px] font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase">
                 {card.title}
               </span>
-              <Icon size={12} className="text-[var(--text-muted)]" />
+              <Icon size={12} className="text-[var(--text-muted)] transition-colors group-hover:text-accent" />
             </div>
 
             <div className="mt-3">
-              <span className={`font-mono text-3xl font-semibold ${card.colorClass}`}>
-                {card.value}
+              <span className={`font-mono text-3xl font-semibold tabular-nums ${card.colorClass}`}>
+                {hasValue
+                  ? <AnimatedNumber value={card.raw as number} formatter={card.formatter} />
+                  : "N/A"}
               </span>
             </div>
 
@@ -106,9 +111,11 @@ export function MetricCards({ snapshot }: { snapshot: SnapshotResponse }) {
                 <span className="text-[11px] font-sans">{card.sub}</span>
               </div>
               <div className="w-full h-[3px] bg-elevated rounded-none overflow-hidden">
-                <div 
-                  className="h-full bg-accent transition-all duration-300"
-                  style={{ width: `${card.progress}%` }}
+                <motion.div 
+                  className="h-full bg-accent"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${card.progress}%` }}
+                  transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
                 />
               </div>
             </div>

@@ -5,8 +5,8 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Ca
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 
-// Series colors
-const PALETTE = ["#4f8ef7", "#34d399", "#f59e0b", "#a78bfa", "#f87171"];
+// Series colors — driven by theme tokens (OKLCH) for perceptual consistency
+const PALETTE = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)", "var(--series-5)"];
 const BENCHMARK_COLOR = "var(--text-secondary)";
 
 const CHART_THEME = {
@@ -70,7 +70,7 @@ export function ReturnsChart({ metrics }: { metrics: MetricsResponse }) {
   }, [metrics]);
 
   const isDark = !mounted || theme === "dark";
-  const portfolioColor = isDark ? "var(--text-primary)" : "var(--bg-base)";
+  const portfolioColor = "var(--series-portfolio)";
   const gridColor = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
 
   // Format date helper (MMM 'YY)

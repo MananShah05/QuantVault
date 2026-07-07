@@ -5,8 +5,8 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Ca
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 
-// Series colors
-const PALETTE = ["#4f8ef7", "#34d399", "#f59e0b", "#a78bfa", "#f87171"];
+// Series colors — driven by theme tokens (OKLCH) for perceptual consistency
+const PALETTE = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)", "var(--series-5)"];
 
 const CHART_THEME = {
   background: 'transparent',
@@ -71,7 +71,7 @@ export function VolatilityChart({ metrics, selectedRange, onRangeChange, showRan
   }, [metrics]);
 
   const isDark = !mounted || theme === "dark";
-  const portfolioColor = isDark ? "var(--text-primary)" : "var(--bg-base)";
+  const portfolioColor = "var(--series-portfolio)";
   const gridColor = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
 
   // Format date helper (MMM 'YY)
@@ -95,7 +95,7 @@ export function VolatilityChart({ metrics, selectedRange, onRangeChange, showRan
               key={range} 
               className={`h-7 px-3 font-mono text-[11px] rounded transition-colors ${
                 selectedRange === range 
-                  ? "text-[#4f8ef7] bg-[#4f8ef7]/12 font-semibold" 
+                  ? "text-accent bg-[var(--accent-dim)] font-semibold" 
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
               onClick={() => onRangeChange(range)}
@@ -157,11 +157,11 @@ export function VolatilityChart({ metrics, selectedRange, onRangeChange, showRan
 
             <ReferenceLine 
               y={20} 
-              stroke="rgba(251, 191, 36, 0.3)" 
+              stroke="var(--warning-dim)" 
               strokeDasharray="4 3" 
               label={{ 
                 value: '20% threshold', 
-                fill: '#fbbf24', 
+                fill: 'var(--warning)', 
                 fontSize: 9, 
                 fontFamily: 'IBM Plex Mono', 
                 position: 'insideBottomRight' 

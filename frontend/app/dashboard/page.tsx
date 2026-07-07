@@ -1,34 +1,14 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { usePortfolios } from "@/hooks/usePortfolio";
 import { PortfolioListItem } from "@/types";
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion } from "framer-motion";
 import { MOTION } from "@/lib/motion";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { PortfolioList } from "@/components/dashboard/PortfolioList";
-
-function AnimatedNumber({ 
-  value, 
-  formatter = (v: number) => v.toFixed(2) 
-}: { 
-  value: number; 
-  formatter?: (v: number) => string;
-}) {
-  const motionValue = useMotionValue(0);
-  const rounded = useTransform(motionValue, (latest) => formatter(latest));
-
-  useEffect(() => {
-    const controls = animate(motionValue, value, {
-      duration: 1.2,
-      ease: [0.25, 0.1, 0.25, 1],
-    });
-    return () => controls.stop();
-  }, [motionValue, value]);
-
-  return <motion.span>{rounded}</motion.span>;
-}
 
 function average(values: Array<number | null | undefined>) {
   const valid = values.filter((value): value is number => value !== null && value !== undefined);
@@ -168,7 +148,7 @@ export default function DashboardPage() {
         
         <motion.div variants={MOTION.itemUp}>
           <Link href="/portfolio/new">
-            <button className="h-10 bg-accent hover:bg-[#3b7de8] text-white font-sans text-[13px] font-medium px-5 rounded-[6px] flex items-center gap-2 transition-all select-none">
+            <button className="h-10 bg-accent hover:bg-accent-hover text-[var(--accent-foreground)] font-sans text-[13px] font-medium px-5 rounded-[6px] flex items-center gap-2 transition-all select-none">
               <Plus size={16} />
               Build Portfolio
             </button>
@@ -177,8 +157,21 @@ export default function DashboardPage() {
       </motion.div>
 
       {isLoading ? (
-        <div className="flex min-h-[300px] items-center justify-center bg-surface border border-subtle rounded-lg">
-          <Loader2 className="h-6 w-6 animate-spin text-accent" />
+        <div className="space-y-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="bg-surface elev-1 border border-subtle rounded-lg p-5 flex flex-col justify-between min-h-[120px]">
+                <div className="skeleton h-2.5 w-24" />
+                <div className="skeleton h-8 w-20" />
+                <div className="skeleton h-2.5 w-32" />
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="skeleton h-40 w-full rounded-lg" />
+            ))}
+          </div>
         </div>
       ) : isError ? (
         <div className="bg-surface border border-subtle p-8 text-center text-negative rounded-lg font-sans text-sm">
@@ -191,7 +184,7 @@ export default function DashboardPage() {
             Build your first multi-asset portfolio to calculate risk parameters and analyze market correlations.
           </p>
           <Link href="/portfolio/new">
-            <button className="h-9 bg-accent hover:bg-[#3b7de8] text-white font-sans text-xs font-medium px-4 rounded-[6px] transition-all">
+            <button className="h-9 bg-accent hover:bg-accent-hover text-[var(--accent-foreground)] font-sans text-xs font-medium px-4 rounded-[6px] transition-all">
               + New Portfolio
             </button>
           </Link>
@@ -237,10 +230,10 @@ export default function DashboardPage() {
                     const status = portfolio.status;
                     const statusClass = 
                       status === "ready" 
-                        ? "bg-[#34d399]/10 text-positive border border-[#34d399]/20" 
+                        ? "bg-[var(--positive-dim)] text-positive border border-[var(--positive-dim)]" 
                         : status === "computing" 
-                          ? "bg-[#fbbf24]/10 text-warning border border-[#fbbf24]/20" 
-                          : "bg-[#f87171]/10 text-negative border border-[#f87171]/20";
+                          ? "bg-[var(--warning-dim)] text-warning border border-[var(--warning-dim)]" 
+                          : "bg-[var(--negative-dim)] text-negative border border-[var(--negative-dim)]";
 
                     return (
                       <tr key={portfolio.id} className="hover:bg-elevated transition-colors duration-100 group">

@@ -318,7 +318,7 @@ export default function AnalyticsComparePage() {
             Create or compute a portfolio first to enable efficiency and attribution analysis.
           </p>
           <Link href="/portfolio/new">
-            <button className="h-9 bg-accent hover:bg-[#3b7de8] text-white font-sans text-xs font-medium px-4 rounded-[6px] transition-all">
+            <button className="h-9 bg-accent hover:bg-accent-hover text-[var(--accent-foreground)] font-sans text-xs font-medium px-4 rounded-[6px] transition-all">
               Create Portfolio
             </button>
           </Link>
@@ -513,7 +513,7 @@ export default function AnalyticsComparePage() {
                 {/* y=0.065 Risk-Free threshold reference line */}
                 <ReferenceLine
                   y={0.065}
-                  stroke="rgba(251,191,36,0.35)"
+                  stroke="var(--warning-dim)"
                   strokeDasharray="4 3"
                   strokeWidth={1.5}
                   label={{
@@ -592,7 +592,7 @@ export default function AnalyticsComparePage() {
                 {/* risk-free reference line */}
                 <ReferenceLine
                   x={0.065}
-                  stroke="rgba(251,191,36,0.3)"
+                  stroke="var(--warning-dim)"
                   strokeDasharray="4 3"
                 />
 

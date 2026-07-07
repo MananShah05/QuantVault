@@ -6,57 +6,62 @@
 
 @layer base {
   :root {
-    /* Base surfaces */
-    --bg-base:         #111827;   /* deepest background */
-    --bg-surface:      #182235;   /* card / panel background */
-    --bg-elevated:     #223049;   /* hover states, nested panels */
-    --bg-overlay:      #2a3a55;   /* modals, dropdowns */
+    /* ── Base surfaces (OKLCH) ───────────────────────────────── */
+    --bg-base:         oklch(0.21 0.028 264);   /* deepest background */
+    --bg-surface:      oklch(0.26 0.032 263);   /* card / panel background */
+    --bg-elevated:     oklch(0.32 0.042 263);   /* hover states, nested panels */
+    --bg-overlay:      oklch(0.37 0.050 263);   /* modals, dropdowns */
 
-    /* Borders */
-    --border-subtle:   rgba(226, 232, 240, 0.10);
-    --border-default:  rgba(226, 232, 240, 0.18);
-    --border-strong:   rgba(226, 232, 240, 0.30);
+    /* ── Borders (cool neutral, alpha-tiered) ────────────────── */
+    --border-subtle:   oklch(0.92 0.013 254 / 0.10);
+    --border-default:  oklch(0.92 0.013 254 / 0.18);
+    --border-strong:   oklch(0.92 0.013 254 / 0.30);
 
-    /* Text */
-    --text-primary:    #f8fafc;
-    --text-secondary:  #cbd5e1;
-    --text-muted:      #94a3b8;
+    /* ── Text ────────────────────────────────────────────────── */
+    --text-primary:    oklch(0.98 0.003 248);
+    --text-secondary:  oklch(0.86 0.020 254);
+    --text-muted:      oklch(0.68 0.030 257);
 
-    /* Accent — singular, used sparingly */
-    --accent:          #60a5fa;       /* blue — primary actions, active states */
-    --accent-foreground: #ffffff;
-    --accent-dim:      rgba(96, 165, 250, 0.16);
-    --accent-border:   rgba(96, 165, 250, 0.38);
+    /* ── Accent — signal cyan/teal, used sparingly ───────────── */
+    --accent:          oklch(0.78 0.120 195);   /* bright: text, active, borders, rings */
+    --accent-hover:    oklch(0.84 0.120 195);   /* button hover */
+    --accent-foreground: oklch(0.20 0.020 240); /* dark ink on accent fills */
+    --accent-dim:      oklch(0.78 0.120 195 / 0.16);
+    --accent-border:   oklch(0.78 0.120 195 / 0.38);
 
-    /* Semantic */
-    --positive:        #34d399;   /* gains, good Sharpe */
-    --positive-dim:    rgba(52, 211, 153, 0.1);
-    --negative:        #f87171;   /* losses, drawdowns */
-    --negative-dim:    rgba(248, 113, 113, 0.1);
-    --warning:         #fbbf24;   /* elevated risk */
-    --warning-dim:     rgba(251, 191, 36, 0.1);
-    --neutral:         #cbd5e1;
+    /* ── Semantic — equiluminant gains/losses ────────────────── */
+    --positive:        oklch(0.76 0.140 164);
+    --positive-dim:    oklch(0.76 0.140 164 / 0.12);
+    --negative:        oklch(0.70 0.165 22);
+    --negative-dim:    oklch(0.70 0.165 22 / 0.12);
+    --warning:         oklch(0.83 0.150 85);
+    --warning-dim:     oklch(0.83 0.150 85 / 0.12);
+    --neutral:         oklch(0.86 0.020 254);
 
-    /* Chart series */
-    --series-1:        #60a5fa;   /* blue */
-    --series-2:        #34d399;   /* green */
-    --series-3:        #f59e0b;   /* amber */
-    --series-4:        #a78bfa;   /* purple */
-    --series-5:        #f87171;   /* red */
-    --series-portfolio: #f8fafc;  /* near-white, bold, 2px */
+    /* ── Chart series (data-blue distinct from accent) ───────── */
+    --series-1:        oklch(0.70 0.130 256);   /* blue */
+    --series-2:        oklch(0.76 0.140 164);   /* green */
+    --series-3:        oklch(0.77 0.160 70);    /* amber */
+    --series-4:        oklch(0.74 0.140 295);   /* violet */
+    --series-5:        oklch(0.70 0.165 22);    /* red */
+    --series-portfolio: oklch(0.98 0.003 248);  /* near-white, bold, 2px */
 
-    /* Background patterns */
-    --radial-glow:     radial-gradient(ellipse 80% 40% at 50% 0%, rgba(96, 165, 250, 0.06) 0%, transparent 62%);
-    --dot-grid:        radial-gradient(circle, rgba(226, 232, 240, 0.04) 1px, transparent 1px);
+    /* ── Depth ───────────────────────────────────────────────── */
+    --shadow-inset-top: inset 0 1px 0 0 oklch(0.92 0.013 254 / 0.04);
+    --shadow-elev:      0 1px 2px oklch(0.15 0.02 264 / 0.45), 0 4px 12px oklch(0.12 0.02 264 / 0.28);
 
-    /* Shadcn system integration */
+    /* ── Background patterns ─────────────────────────────────── */
+    --radial-glow:     radial-gradient(ellipse 80% 40% at 50% 0%, oklch(0.78 0.120 195 / 0.06) 0%, transparent 62%);
+    --dot-grid:        radial-gradient(circle, oklch(0.92 0.013 254 / 0.04) 1px, transparent 1px);
+
+    /* ── Shadcn system integration ───────────────────────────── */
     --background: var(--bg-base);
     --foreground: var(--text-primary);
     --border: var(--border-default);
     --input: var(--border-default);
     --ring: var(--accent);
     --primary: var(--accent);
-    --primary-foreground: #ffffff;
+    --primary-foreground: var(--accent-foreground);
     --secondary: var(--bg-surface);
     --secondary-foreground: var(--text-primary);
     --muted: var(--bg-elevated);
@@ -66,61 +71,66 @@
     --card: var(--bg-surface);
     --card-foreground: var(--text-primary);
     --destructive: var(--negative);
-    --destructive-foreground: #ffffff;
+    --destructive-foreground: oklch(0.98 0.003 248);
   }
 
   .light {
-    /* Base surfaces */
-    --bg-base:         #f4f6fa;   /* clean light gray background */
-    --bg-surface:      #ffffff;   /* panel background */
-    --bg-elevated:     #edf2f7;   /* hover states, nested panels */
-    --bg-overlay:      #ffffff;   /* modals, dropdowns */
+    /* ── Base surfaces ───────────────────────────────────────── */
+    --bg-base:         oklch(0.97 0.005 255);   /* clean light gray background */
+    --bg-surface:      oklch(1 0 0);            /* panel background */
+    --bg-elevated:     oklch(0.95 0.008 255);   /* hover states, nested panels */
+    --bg-overlay:      oklch(1 0 0);            /* modals, dropdowns */
 
-    /* Borders */
-    --border-subtle:   rgba(15, 23, 42, 0.04);
-    --border-default:  rgba(15, 23, 42, 0.08);
-    --border-strong:   rgba(15, 23, 42, 0.16);
+    /* ── Borders ─────────────────────────────────────────────── */
+    --border-subtle:   oklch(0.21 0.04 264 / 0.04);
+    --border-default:  oklch(0.21 0.04 264 / 0.08);
+    --border-strong:   oklch(0.21 0.04 264 / 0.16);
 
-    /* Text */
-    --text-primary:    #0f172a;
-    --text-secondary:  #4a5568;
-    --text-muted:      #718096;
+    /* ── Text ────────────────────────────────────────────────── */
+    --text-primary:    oklch(0.23 0.035 264);
+    --text-secondary:  oklch(0.44 0.025 260);
+    --text-muted:      oklch(0.55 0.025 258);
 
-    /* Accent */
-    --accent:          #2563eb;       /* clearer blue for light background */
-    --accent-foreground: #ffffff;
-    --accent-dim:      rgba(37, 99, 235, 0.08);
-    --accent-border:   rgba(37, 99, 235, 0.2);
+    /* ── Accent — deeper teal for light surfaces ─────────────── */
+    --accent:          oklch(0.55 0.130 205);
+    --accent-hover:    oklch(0.50 0.130 205);
+    --accent-foreground: oklch(0.99 0.002 250);
+    --accent-dim:      oklch(0.55 0.130 205 / 0.08);
+    --accent-border:   oklch(0.55 0.130 205 / 0.22);
 
-    /* Semantic */
-    --positive:        #059669;
-    --positive-dim:    rgba(5, 150, 105, 0.08);
-    --negative:        #dc2626;
-    --negative-dim:    rgba(220, 38, 38, 0.08);
-    --warning:         #d97706;
-    --warning-dim:     rgba(217, 119, 6, 0.08);
-    --neutral:         #64748b;
+    /* ── Semantic ────────────────────────────────────────────── */
+    --positive:        oklch(0.58 0.140 162);
+    --positive-dim:    oklch(0.58 0.140 162 / 0.08);
+    --negative:        oklch(0.56 0.190 27);
+    --negative-dim:    oklch(0.56 0.190 27 / 0.08);
+    --warning:         oklch(0.66 0.150 70);
+    --warning-dim:     oklch(0.66 0.150 70 / 0.08);
+    --neutral:         oklch(0.50 0.025 258);
 
-    /* Chart series */
-    --series-1:        #2563eb;
-    --series-2:        #059669;
-    --series-3:        #d97706;
-    --series-4:        #7c3aed;
-    --series-5:        #dc2626;
-    --series-portfolio: #0f172a;
+    /* ── Chart series ────────────────────────────────────────── */
+    --series-1:        oklch(0.52 0.180 258);
+    --series-2:        oklch(0.58 0.140 162);
+    --series-3:        oklch(0.66 0.150 60);
+    --series-4:        oklch(0.52 0.180 295);
+    --series-5:        oklch(0.56 0.190 27);
+    --series-portfolio: oklch(0.23 0.035 264);
 
-    /* Background patterns */
-    --radial-glow:     radial-gradient(ellipse 80% 40% at 50% 0%, rgba(37, 99, 235, 0.02) 0%, transparent 60%);
-    --dot-grid:        radial-gradient(circle, rgba(15, 23, 42, 0.025) 1px, transparent 1px);
+    /* ── Depth ───────────────────────────────────────────────── */
+    --shadow-inset-top: inset 0 1px 0 0 oklch(1 0 0 / 0.6);
+    --shadow-elev:      0 1px 2px oklch(0.21 0.04 264 / 0.06), 0 4px 12px oklch(0.21 0.04 264 / 0.05);
 
-    /* Shadcn system integration */
+    /* ── Background patterns ─────────────────────────────────── */
+    --radial-glow:     radial-gradient(ellipse 80% 40% at 50% 0%, oklch(0.55 0.130 205 / 0.03) 0%, transparent 60%);
+    --dot-grid:        radial-gradient(circle, oklch(0.21 0.04 264 / 0.025) 1px, transparent 1px);
+
+    /* ── Shadcn system integration ───────────────────────────── */
     --background: var(--bg-base);
     --foreground: var(--text-primary);
     --border: var(--border-default);
     --input: var(--border-default);
     --ring: var(--accent);
     --primary: var(--accent);
-    --primary-foreground: #ffffff;
+    --primary-foreground: var(--accent-foreground);
     --secondary: var(--bg-surface);
     --secondary-foreground: var(--text-primary);
     --muted: var(--bg-elevated);
@@ -130,7 +140,7 @@
     --card: var(--bg-surface);
     --card-foreground: var(--text-primary);
     --destructive: var(--negative);
-    --destructive-foreground: #ffffff;
+    --destructive-foreground: oklch(0.99 0.002 250);
   }
 
   * {
@@ -151,14 +161,44 @@
     pointer-events: none;
     z-index: 0;
   }
+
+  /* Tabular figures for all monospace numerics — keeps columns aligned
+     and prevents jitter during count-up animations. */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* System keyboard-focus ring — accent-tinted, replaces browser defaults.
+     :where() keeps specificity at 0 so components can still override. */
+  :where(button, a, [role="button"], summary, [tabindex]):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-border);
+    border-radius: 4px;
+  }
 }
 
 /* Custom UI Utilities for Obsidian Bloomberg */
 .glass-panel {
   background: var(--bg-surface) !important;
   border: 1px solid var(--border-subtle) !important;
-  box-shadow: none !important;
+  box-shadow: var(--shadow-inset-top) !important;
   backdrop-filter: none !important;
+}
+
+/* Surface elevation tiers — felt depth via inset highlight + soft drop,
+   no gradients or glassmorphism. */
+.elev-1 {
+  box-shadow: var(--shadow-inset-top);
+}
+.elev-2 {
+  box-shadow: var(--shadow-inset-top), var(--shadow-elev);
+}
+
+/* System focus ring — matches accent, replaces browser defaults. */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--accent-border);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -219,7 +259,7 @@ input[type="number"]::-webkit-outer-spin-button {
     --text-primary:    #0f172a !important;
     --text-secondary:  #475569 !important;
     --text-muted:      #64748b !important;
-    --accent:          #1d4ed8 !important;
+    --accent:          #0e7490 !important;
     --series-portfolio: #0f172a !important;
   }
 

@@ -28,7 +28,7 @@ export function AllocationSummary({ allocation, assets }: AllocationSummaryProps
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 select-none font-sans text-[var(--text-secondary)]">
       {/* Risk Posture + Sector Concentration */}
-      <section className="bg-surface border border-subtle rounded-lg p-6 flex flex-col justify-between min-h-[260px] lg:col-span-7">
+      <section className="bg-surface border border-subtle elev-1 rounded-lg p-6 flex flex-col justify-between min-h-[260px] lg:col-span-7">
         <div>
           <p className="font-sans text-[10px] font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase mb-4">
             Risk Posture & Sector Concentration
@@ -87,7 +87,7 @@ export function AllocationSummary({ allocation, assets }: AllocationSummaryProps
       </section>
 
       {/* Asset Weights Card */}
-      <section className="bg-surface border border-subtle rounded-lg p-6 flex flex-col justify-between min-h-[260px] lg:col-span-5">
+      <section className="bg-surface border border-subtle elev-1 rounded-lg p-6 flex flex-col justify-between min-h-[260px] lg:col-span-5">
         <div>
           <p className="font-sans text-[10px] font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase mb-4">Asset Allocations</p>
           <div className="space-y-3.5 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">

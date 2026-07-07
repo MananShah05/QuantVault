@@ -306,7 +306,7 @@ export default function RiskStressComparePage() {
             Create or compute a portfolio first to enable multi-asset drawdown and stress diagnostics.
           </p>
           <Link href="/portfolio/new">
-            <button className="h-9 bg-accent hover:bg-[#3b7de8] text-white font-sans text-xs font-medium px-4 rounded-[6px] transition-all">
+            <button className="h-9 bg-accent hover:bg-accent-hover text-[var(--accent-foreground)] font-sans text-xs font-medium px-4 rounded-[6px] transition-all">
               Create Portfolio
             </button>
           </Link>
@@ -504,7 +504,7 @@ export default function RiskStressComparePage() {
               
               <ReferenceLine
                 y={-0.1}
-                stroke="rgba(251,191,36,0.25)"
+                stroke="var(--warning-dim)"
                 strokeDasharray="4 3"
                 label={{
                   value: "-10%",
@@ -518,7 +518,7 @@ export default function RiskStressComparePage() {
               
               <ReferenceLine
                 y={-0.2}
-                stroke="rgba(248,113,113,0.25)"
+                stroke="var(--negative-dim)"
                 strokeDasharray="4 3"
                 label={{
                   value: "-20%",

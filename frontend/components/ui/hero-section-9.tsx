@@ -104,7 +104,7 @@ export const HeroSection = ({ onLoginClick }: { onLoginClick: () => void }) => {
                                     <Button
                                         onClick={onLoginClick}
                                         size="sm"
-                                        className="h-8 bg-accent hover:bg-[#3b7de8] text-white transition-all border-none"
+                                        className="h-8 bg-accent hover:bg-accent-hover text-[var(--accent-foreground)] transition-all border-none"
                                     >
                                         <span>Create Account</span>
                                     </Button>
@@ -140,7 +140,7 @@ export const HeroSection = ({ onLoginClick }: { onLoginClick: () => void }) => {
                                 <Button
                                     onClick={onLoginClick}
                                     size="lg"
-                                    className="bg-accent hover:bg-[#3b7de8] text-white font-sans text-sm font-medium px-8 h-11 rounded-[6px] transition-all border-none"
+                                    className="bg-accent hover:bg-accent-hover text-[var(--accent-foreground)] font-sans text-sm font-medium px-8 h-11 rounded-[6px] transition-all border-none"
                                 >
                                     <span className="btn-label">Start Building Portfolio</span>
                                 </Button>

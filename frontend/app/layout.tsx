@@ -38,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${sans.variable} ${serif.variable} ${mono.variable} font-sans min-h-screen bg-background text-foreground antialiased overflow-x-hidden selection:bg-accent selection:text-white`}>
+      <body className={`${sans.variable} ${serif.variable} ${mono.variable} font-sans min-h-screen bg-background text-foreground antialiased overflow-x-hidden selection:bg-accent selection:text-[var(--accent-foreground)]`}>
         <Providers>
           <AppLayout>{children}</AppLayout>
         </Providers>

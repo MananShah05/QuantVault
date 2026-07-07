@@ -1,4 +1,4 @@
-# 🏛️ QuantVault — Multi-Asset Portfolio Risk Dashboard
+# 🏛️ RiskMatrix — Multi-Asset Portfolio Risk Dashboard
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Next.js 14](https://img.shields.io/badge/Next.js%2014-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)

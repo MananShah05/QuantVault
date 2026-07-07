@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCreatePortfolio } from "@/hooks/usePortfolio";
 import { AssetSearch } from "./AssetSearch";
-import { Loader2, Zap, X } from "lucide-react";
+import { Loader2, Zap, X, Check, AlertTriangle, ArrowUp, Minus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MOTION } from "@/lib/motion";
 
@@ -45,6 +45,16 @@ export function PortfolioBuilder() {
   const isWeightValid = totalWeight === 100;
   const isNameValid = name.length >= 3;
   const isValid = isWeightValid && isNameValid && assets.length >= 2 && assets.length <= 10;
+
+  // Live allocation status for inline weight validation feedback
+  const weightStatus =
+    assets.length === 0
+      ? { label: "AWAITING ASSETS", color: "text-[var(--text-muted)]", icon: <Minus size={11} /> }
+      : totalWeight > 100
+        ? { label: `${totalWeight - 100}% OVER`, color: "text-negative", icon: <ArrowUp size={11} /> }
+        : totalWeight < 100
+          ? { label: `${100 - totalWeight}% TO ALLOCATE`, color: "text-warning", icon: <AlertTriangle size={11} /> }
+          : { label: "BALANCED", color: "text-positive", icon: <Check size={11} /> };
 
   // HHI Concentration calculation
   const hhi = assets.reduce((sum, a) => sum + (a.weight) ** 2, 0);
@@ -150,7 +160,7 @@ export function PortfolioBuilder() {
             disabled={!isValid || isSubmitting}
             className={`h-10 px-6 rounded-[6px] font-sans text-[13px] font-medium flex items-center gap-2 transition-all ${
               isValid && !isSubmitting 
-                ? "bg-accent hover:bg-[#3b7de8] text-white" 
+                ? "bg-accent hover:bg-accent-hover text-[var(--accent-foreground)]" 
                 : "bg-surface border border-subtle text-[var(--text-muted)] cursor-not-allowed opacity-40"
             }`}
           >
@@ -251,7 +261,7 @@ export function PortfolioBuilder() {
 
                         <button 
                           onClick={() => handleRemoveAsset(asset.ticker)}
-                          className="text-[var(--text-muted)] hover:text-[#f87171] transition-colors p-1"
+                          className="text-[var(--text-muted)] hover:text-negative transition-colors p-1"
                           title="Remove asset"
                         >
                           <X size={12} />
@@ -272,18 +282,41 @@ export function PortfolioBuilder() {
             {/* Weight Total Progress Bar */}
             <div className="space-y-2 pt-2 border-t border-subtle">
               <div className="flex justify-between items-center text-xs font-mono">
-                <span>TOTAL WEIGHT</span>
-                <span className={totalWeight > 100 ? "text-negative" : "text-positive"}>
-                  {totalWeight}%
-                </span>
+                <span className="tracking-wide">TOTAL WEIGHT</span>
+                <div className="flex items-center gap-2">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={weightStatus.label}
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                      className={`flex items-center gap-1 text-[10px] font-sans font-medium tracking-wide ${weightStatus.color}`}
+                    >
+                      {weightStatus.icon}
+                      {weightStatus.label}
+                    </motion.span>
+                  </AnimatePresence>
+                  <motion.span
+                    key={`tw-${totalWeight === 100}`}
+                    animate={totalWeight === 100 ? { scale: [1, 1.18, 1] } : { scale: 1 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className={`tabular-nums font-semibold ${
+                      totalWeight > 100 ? "text-negative" : totalWeight === 100 ? "text-positive" : "text-[var(--text-secondary)]"
+                    }`}
+                  >
+                    {totalWeight}%
+                  </motion.span>
+                </div>
               </div>
-              <div className="h-1 bg-elevated rounded-none overflow-hidden w-full">
-                <div
-                  className={`h-full transition-all duration-200 ${totalWeight > 100 ? "bg-negative" : "bg-positive"}`}
-                  style={{ width: `${Math.min(totalWeight, 100)}%` }}
+              <div className="h-1 bg-elevated rounded-none overflow-hidden w-full relative">
+                <motion.div
+                  className={`h-full ${totalWeight > 100 ? "bg-negative" : totalWeight === 100 ? "bg-positive" : "bg-accent"}`}
+                  animate={{ width: `${Math.min(totalWeight, 100)}%` }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 />
               </div>
-              <div className="flex justify-between text-[11px] text-[var(--text-muted)]">
+              <div className="flex justify-between text-[11px] text-[var(--text-muted)] tabular-nums">
                 <span>Allocated: {totalWeight}%</span>
                 <span>Remaining: {Math.max(0, 100 - totalWeight)}%</span>
               </div>
@@ -341,7 +374,7 @@ export function PortfolioBuilder() {
                       strokeDasharray={`${seg.segmentLength} ${circ - seg.segmentLength}`}
                       strokeDashoffset={seg.strokeOffset}
                       strokeLinecap="butt"
-                      style={{ transition: "stroke-dasharray 300ms ease, stroke-dashoffset 300ms ease" }}
+                      style={{ transition: "stroke-dasharray 450ms cubic-bezier(0.16,1,0.3,1), stroke-dashoffset 450ms cubic-bezier(0.16,1,0.3,1)" }}
                     />
                   ))}
                 </svg>

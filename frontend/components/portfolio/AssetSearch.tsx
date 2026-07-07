@@ -35,7 +35,7 @@ export function AssetSearch({ onAdd }: { onAdd: (asset: { ticker: string; name: 
                 onAdd({ ticker: data.ticker, name: data.name, asset_class: data.asset_class });
                 setQuery("");
               }}
-              className="h-8 px-3 bg-accent hover:bg-[#3b7de8] text-white font-sans text-xs font-medium rounded transition-all flex items-center gap-1 shrink-0"
+              className="h-8 px-3 bg-accent hover:bg-accent-hover text-[var(--accent-foreground)] font-sans text-xs font-medium rounded transition-all flex items-center gap-1 shrink-0"
             >
               <Plus className="h-3.5 w-3.5" /> Add
             </button>

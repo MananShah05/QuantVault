@@ -119,7 +119,7 @@ export function DrawdownChart({ metrics }: { metrics: MetricsResponse }) {
             stroke="var(--negative)" 
             strokeWidth={1.5} 
             fillOpacity={1} 
-            fill="rgba(248, 113, 113, 0.08)" 
+            fill="var(--negative-dim)" 
             isAnimationActive={true}
             animationDuration={700}
             animationEasing="ease-out"

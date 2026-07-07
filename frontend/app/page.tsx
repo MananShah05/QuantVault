@@ -140,8 +140,8 @@ export default function LandingPage() {
                     <div 
                       className={`p-3.5 rounded-[6px] border text-xs text-left leading-relaxed ${
                         errorMessage.includes("successful")
-                          ? "bg-[#34d399]/10 border-[#34d399]/20 text-[#34d399]"
-                          : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
+                          ? "bg-[var(--positive-dim)] border-[var(--positive-dim)] text-positive"
+                          : "bg-[var(--negative-dim)] border-[var(--negative-dim)] text-negative"
                       }`}
                     >
                       <span>{errorMessage}</span>
@@ -194,7 +194,7 @@ export default function LandingPage() {
                       disabled={isLoading}
                       whileHover={MOTION.buttonHover}
                       whileTap={MOTION.buttonTap}
-                      className="w-full h-11 bg-accent hover:bg-[#3b7de8] text-white font-sans text-sm font-medium rounded-[6px] flex items-center justify-center gap-2 transition-all shadow-none mt-6 select-none border-none"
+                      className="w-full h-11 bg-accent hover:bg-accent-hover text-[var(--accent-foreground)] font-sans text-sm font-medium rounded-[6px] flex items-center justify-center gap-2 transition-all shadow-none mt-6 select-none border-none"
                     >
                       {isSignUp ? "Register Account" : "Verify & Connect"}
                     </motion.button>
@@ -249,7 +249,7 @@ export default function LandingPage() {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
-                        className={line.includes("granted") ? "text-[#34d399]" : "text-[var(--text-secondary)]"}
+                        className={line.includes("granted") ? "text-positive" : "text-[var(--text-secondary)]"}
                       >
                         <span className="text-accent mr-2">[$]</span> {line}
                       </motion.p>

@@ -120,7 +120,7 @@ export function PortfolioCard({ portfolio }: { portfolio: PortfolioListItem }) {
           
           <button 
             onClick={() => setShowConfirm(true)}
-            className="p-1 text-[var(--text-muted)] hover:text-[#f87171] hover:bg-[#f87171]/10 rounded transition-colors shrink-0"
+            className="p-1 text-[var(--text-muted)] hover:text-negative hover:bg-[var(--negative-dim)] rounded transition-colors shrink-0"
             title="Delete Portfolio"
           >
             <Trash2 size={14} />
@@ -167,7 +167,7 @@ export function PortfolioCard({ portfolio }: { portfolio: PortfolioListItem }) {
             <svg className="w-full h-[50px]" viewBox="0 0 340 50">
               <polyline
                 fill="none"
-                stroke="#4f8ef7"
+                stroke="var(--series-1)"
                 strokeWidth="1"
                 points={sparklinePoints}
               />
@@ -196,7 +196,7 @@ export function PortfolioCard({ portfolio }: { portfolio: PortfolioListItem }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden bg-[#f87171]/5 border-t border-[#f87171]/25 px-5 py-3.5 flex items-center justify-between text-xs text-[#f87171]"
+            className="overflow-hidden bg-[var(--negative-dim)] border-t border-[var(--negative-dim)] px-5 py-3.5 flex items-center justify-between text-xs text-negative"
           >
             <span className="font-sans">Delete &quot;{portfolio.name}&quot;?</span>
             <div className="flex gap-2">

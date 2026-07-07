@@ -72,7 +72,7 @@ export function SharpeTable({ snapshot, assets }: { snapshot: SnapshotResponse, 
   };
 
   return (
-    <div className="bg-surface border border-subtle rounded-lg p-5 flex flex-col justify-between h-full select-none w-full">
+    <div className="bg-surface border border-subtle elev-1 rounded-lg p-5 flex flex-col justify-between h-full select-none w-full">
       <div>
         <span className="text-[10px] font-sans font-medium tracking-[0.12em] text-[var(--text-muted)] uppercase block mb-4">
           RISK & RETURN ATTRIBUTION
